@@ -1,13 +1,18 @@
 package net.tacuchi.perfil;
 
+import com.icegreen.greenmail.util.GreenMail;
+import com.icegreen.greenmail.util.ServerSetupTest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import net.tacuchi.perfil.local.ArranqueLocalConfig;
+import net.tacuchi.perfil.model.Fuente;
 import net.tacuchi.perfil.soporte.AccessDePrueba;
-import net.tacuchi.perfil.soporte.AlmacenDePruebaConfig;
+import net.tacuchi.perfil.soporte.BaseDeDatosDePrueba;
+import net.tacuchi.perfil.soporte.FuentesDePrueba;
 import net.tacuchi.perfil.soporte.SitioDePrueba;
 import org.springframework.boot.SpringApplication;
 
@@ -15,7 +20,9 @@ import org.springframework.boot.SpringApplication;
  * Arranque local para recorrer panel y API juntos: `./mvnw spring-boot:test-run`.
  * La identidad pasa por la misma verificación que en producción, con claves de prueba publicadas en local;
  * el código firmado queda en target/codigo-local.jwt para que el proxy del panel lo envíe.
- * Solo existe en el classpath de pruebas: ni la clase ni el almacén en memoria entran al jar.
+ * Las ofertas van a un PostgreSQL de pruebas, las tres fuentes se sirven desde sus respuestas guardadas y el
+ * correo diario llega a un servidor de correo de prueba. Los mandos del recorrido viven en /api/local.
+ * Solo existe en el classpath de pruebas: nada de esto entra al jar.
  */
 public final class PerfilApiLocal {
 
@@ -28,6 +35,9 @@ public final class PerfilApiLocal {
     public static void main(String[] args) throws IOException {
         AccessDePrueba access = new AccessDePrueba();
         SitioDePrueba sitio = new SitioDePrueba();
+        FuentesDePrueba fuentes = new FuentesDePrueba();
+        GreenMail correo = new GreenMail(ServerSetupTest.SMTP.dynamicPort());
+        correo.start();
         Files.createDirectories(ARCHIVO_CODIGO.getParent());
         Files.writeString(ARCHIVO_CODIGO, access.codigoValido(Duration.ofHours(12)));
 
@@ -41,10 +51,23 @@ public final class PerfilApiLocal {
                 "--perfil.almacen.endpoint=http://127.0.0.1:1",
                 "--perfil.almacen.bucket=sin-uso",
                 "--perfil.almacen.acceso=sin-uso",
-                "--perfil.almacen.secreto=sin-uso"));
+                "--perfil.almacen.secreto=sin-uso",
+                "--spring.datasource.url=" + BaseDeDatosDePrueba.url(),
+                "--spring.datasource.username=" + BaseDeDatosDePrueba.usuario(),
+                "--spring.datasource.password=" + BaseDeDatosDePrueba.clave(),
+                "--perfil.ofertas.getonbrd-url=" + fuentes.url(Fuente.GET_ON_BOARD),
+                "--perfil.ofertas.remotive-url=" + fuentes.url(Fuente.REMOTIVE),
+                "--perfil.ofertas.remoteok-url=" + fuentes.url(Fuente.REMOTE_OK),
+                // La recolección se dispara con los mandos de /api/local, no por horario.
+                "--perfil.ofertas.cron=-",
+                "--perfil.aviso.activo=true",
+                "--perfil.aviso.remitente=avisos@ejemplo.test",
+                "--spring.mail.host=127.0.0.1",
+                "--spring.mail.port=" + correo.getSmtp().getPort()));
         argumentos.addAll(List.of(args));
+        ArranqueLocalConfig.preparar(fuentes, correo);
         SpringApplication.from(PerfilApiApplication::main)
-                .with(AlmacenDePruebaConfig.class)
+                .with(ArranqueLocalConfig.class)
                 .run(argumentos.toArray(String[]::new));
     }
 }
