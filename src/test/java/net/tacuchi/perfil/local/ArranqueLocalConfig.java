@@ -3,6 +3,7 @@ package net.tacuchi.perfil.local;
 import com.icegreen.greenmail.util.GreenMail;
 import net.tacuchi.perfil.soporte.AlmacenDePruebaConfig;
 import net.tacuchi.perfil.soporte.FuentesDePrueba;
+import net.tacuchi.perfil.soporte.RelojDePrueba;
 import net.tacuchi.perfil.soporte.RelojDePruebaConfig;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +23,10 @@ public class ArranqueLocalConfig {
         correo = correoLevantado;
     }
 
+    /** Las peticiones se cuentan por día del mismo reloj adelantable que usa la API. */
     @Bean
-    FuentesDePrueba fuentesDePrueba() {
+    FuentesDePrueba fuentesDePrueba(RelojDePrueba reloj) {
+        fuentes.usarReloj(reloj);
         return fuentes;
     }
 

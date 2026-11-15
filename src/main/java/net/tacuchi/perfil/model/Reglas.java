@@ -14,6 +14,10 @@ public final class Reglas {
     public static final Duration CONSERVACION_OFERTAS = Duration.ofDays(60);
     /** El día de la persona: la lectura diaria y el correo diario se cuentan en esta zona. */
     public static final ZoneId ZONA_PERSONA = ZoneId.of("America/Lima");
+    /** Lecturas que puede recibir una fuente en un día de Lima, programadas y a demanda, terminen bien o no. */
+    public static final int TOPE_LECTURAS_DIA = 3;
+    /** La recolección programada lee una vez al día cada fuente que ese día aún no tiene lecturas. */
+    public static final int LECTURAS_PROGRAMADAS_DIA = 1;
     /** Tope de ofertas que devuelve una lista. */
     public static final int TOPE_LISTA_OFERTAS = 500;
 

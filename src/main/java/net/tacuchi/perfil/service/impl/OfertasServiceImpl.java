@@ -30,6 +30,7 @@ import net.tacuchi.perfil.model.OfertaGuardada;
 import net.tacuchi.perfil.model.Repetida;
 import net.tacuchi.perfil.model.Reglas;
 import net.tacuchi.perfil.repository.FuenteRepository;
+import net.tacuchi.perfil.repository.LecturaDiaRepository;
 import net.tacuchi.perfil.repository.OfertaRepository;
 import net.tacuchi.perfil.service.OfertasService;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class OfertasServiceImpl implements OfertasService {
 
     private final OfertaRepository ofertaRepository;
     private final FuenteRepository fuenteRepository;
+    private final LecturaDiaRepository lecturaDiaRepository;
     private final CatalogoTecnologias catalogo;
     private final Clock clock;
 
@@ -84,13 +86,16 @@ public class OfertasServiceImpl implements OfertasService {
     public List<FuenteResponse> fuentes() {
         Map<Fuente, LecturaFuente> lecturas = fuenteRepository.todas().stream()
                 .collect(Collectors.toMap(LecturaFuente::fuente, Function.identity()));
+        Map<Fuente, Integer> deHoy = lecturaDiaRepository.delDia(LocalDate.ofInstant(clock.instant(), Reglas.ZONA_PERSONA));
         return Arrays.stream(Fuente.values()).map(fuente -> {
             LecturaFuente lectura = lecturas.get(fuente);
+            int restantes = Math.max(0, Reglas.TOPE_LECTURAS_DIA - deHoy.getOrDefault(fuente, 0));
             if (lectura == null) {
-                return new FuenteResponse(fuente, fuente.nombre(), EstadoLectura.SIN_LEER, null, null, null, 0);
+                return new FuenteResponse(fuente, fuente.nombre(), EstadoLectura.SIN_LEER, null, null, null, 0,
+                        restantes);
             }
             return new FuenteResponse(fuente, fuente.nombre(), lectura.estado(), lectura.detalle(),
-                    lectura.ultimaLectura(), lectura.ultimaCorrecta(), lectura.ofertasLeidas());
+                    lectura.ultimaLectura(), lectura.ultimaCorrecta(), lectura.ofertasLeidas(), restantes);
         }).toList();
     }
 

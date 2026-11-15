@@ -65,6 +65,13 @@ public class ManejadorErrores {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(RecoleccionRechazadaException.class)
+    ProblemDetail recoleccionRechazada(RecoleccionRechazadaException ex) {
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problema.setProperty("motivo", ex.getMotivo().name());
+        return problema;
+    }
+
     /** Un cuerpo ilegible o con un valor fuera de catálogo: se dice qué se esperaba, sin el texto interno. */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ProblemDetail cuerpoIlegible(HttpMessageNotReadableException ex) {

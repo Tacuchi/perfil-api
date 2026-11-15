@@ -1,7 +1,14 @@
 package net.tacuchi.perfil.soporte;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.function.Predicate;
+import net.tacuchi.perfil.dto.FuenteEnRecoleccion;
 import net.tacuchi.perfil.dto.FuenteResponse;
+import net.tacuchi.perfil.dto.RecoleccionResponse;
+import net.tacuchi.perfil.model.EstadoRecoleccion;
+import org.junit.jupiter.api.AfterEach;
 import net.tacuchi.perfil.dto.OfertaDetalleResponse;
 import net.tacuchi.perfil.dto.OfertaResponse;
 import net.tacuchi.perfil.fuentes.FuenteOfertas;
@@ -14,6 +21,8 @@ import org.springframework.core.ParameterizedTypeReference;
 
 /** Base de las pruebas del monitor de ofertas: registrar lo que entregaría una lectura y leerlo por HTTP. */
 public abstract class PruebaOfertas extends PruebaHttp {
+
+    private static final Duration ESPERA = Duration.ofSeconds(20);
 
     @Autowired
     protected RegistroOfertas registro;
@@ -66,5 +75,67 @@ public abstract class PruebaOfertas extends PruebaHttp {
 
     protected FuenteResponse fuente(Fuente fuente) {
         return fuentes().stream().filter(f -> f.fuente() == fuente).findFirst().orElseThrow();
+    }
+
+    /** Lanza por HTTP la recolección general (sin fuente) o de una fuente, y espera la aceptación. */
+    protected RecoleccionResponse lanzar(Fuente fuente) {
+        return postIdentificado(fuente == null ? "/api/recoleccion" : "/api/recoleccion/" + fuente.name())
+                .expectStatus().isAccepted()
+                .expectBody(RecoleccionResponse.class).returnResult().getResponseBody();
+    }
+
+    protected RecoleccionResponse avance() {
+        return getIdentificado("/api/recoleccion").expectStatus().isOk()
+                .expectBody(RecoleccionResponse.class).returnResult().getResponseBody();
+    }
+
+    /** Espera, consultando por HTTP, a que el avance cumpla la condición. */
+    protected RecoleccionResponse esperarAvance(Predicate<RecoleccionResponse> condicion, String que) {
+        Instant limite = Instant.now().plus(ESPERA);
+        RecoleccionResponse actual = avance();
+        while (!condicion.test(actual)) {
+            if (Instant.now().isAfter(limite)) {
+                throw new AssertionError("el avance no llegó a «" + que + "»; quedó en " + actual);
+            }
+            dormir();
+            actual = avance();
+        }
+        return actual;
+    }
+
+    protected RecoleccionResponse esperarFin() {
+        return esperarAvance(a -> a.estado() != EstadoRecoleccion.EN_CURSO, "terminada");
+    }
+
+    /** Lanza y espera el resultado: una lectura a demanda completa. */
+    protected RecoleccionResponse leerADemanda(Fuente fuente) {
+        lanzar(fuente);
+        return esperarFin();
+    }
+
+    protected static FuenteEnRecoleccion enAvance(RecoleccionResponse avance, Fuente fuente) {
+        return avance.fuentes().stream().filter(f -> f.fuente() == fuente).findFirst()
+                .orElseThrow(() -> new AssertionError(fuente + " no está entre las lanzadas: " + avance));
+    }
+
+    /** Ninguna recolección de una prueba sigue viva en la siguiente. */
+    @AfterEach
+    void terminarRecoleccionEnCurso() {
+        for (Fuente fuente : Fuente.values()) {
+            FUENTES.soltar(fuente);
+        }
+        Instant limite = Instant.now().plus(ESPERA);
+        while (recoleccion.avance().estado() == EstadoRecoleccion.EN_CURSO && Instant.now().isBefore(limite)) {
+            dormir();
+        }
+    }
+
+    private static void dormir() {
+        try {
+            Thread.sleep(20);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("espera interrumpida", e);
+        }
     }
 }

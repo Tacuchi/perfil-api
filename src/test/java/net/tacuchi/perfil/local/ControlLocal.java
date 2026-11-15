@@ -24,8 +24,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Mandos del arranque local para recorrer el monitor de ofertas: recoger ahora, pasar al día siguiente,
- * hacer que una fuente falle o bloquee y ver los correos recibidos. Solo existe en el classpath de pruebas
+ * Mandos del arranque local para recorrer el monitor de ofertas: recoger ahora, disparar la programada sin
+ * esperarla, pasar al día siguiente, hacer que una fuente falle, bloquee o quede en pausa y ver los correos
+ * recibidos. Solo existe en el classpath de pruebas
  * y solo se registra en el arranque local; pasa por la misma identificación que el resto de /api.
  */
 @TestComponent
@@ -45,17 +46,35 @@ public class ControlLocal {
         return Map.of("ahora", reloj.instant().toString());
     }
 
-    /** Adelanta el reloj un día y recoge: la recolección del día siguiente. */
+    /** Dispara la recolección programada en otro hilo y responde sin esperarla, como el horario. */
+    @PostMapping("/programada")
+    public Map<String, Object> programada() {
+        Thread.ofVirtual().name("programada-local").start(recoleccion::recoger);
+        return Map.of("ahora", reloj.instant().toString());
+    }
+
+    /** Adelanta el reloj un día y dispara la programada sin esperarla: la recolección del día siguiente. */
     @PostMapping("/dia-siguiente")
     public Map<String, Object> diaSiguiente() {
         reloj.adelantar(Duration.ofDays(1));
-        return recoger();
+        return programada();
     }
 
     @PutMapping("/fuentes/{fuente}")
     public Map<String, Object> modo(@PathVariable Fuente fuente, @RequestParam FuentesDePrueba.Modo modo) {
         fuentes.modo(fuente, modo);
         return Map.of("fuente", fuente, "modo", modo);
+    }
+
+    /** Con activa=true la fuente recibe las peticiones y retiene la respuesta hasta que se la suelta. */
+    @PutMapping("/fuentes/{fuente}/pausa")
+    public Map<String, Object> pausa(@PathVariable Fuente fuente, @RequestParam boolean activa) {
+        if (activa) {
+            fuentes.pausar(fuente);
+        } else {
+            fuentes.soltar(fuente);
+        }
+        return Map.of("fuente", fuente, "pausa", fuentes.enPausa(fuente));
     }
 
     @GetMapping("/correos")

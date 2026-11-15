@@ -70,9 +70,10 @@ public abstract class PruebaHttp {
 
     @BeforeEach
     void vaciarOfertas() {
-        jdbc.sql("TRUNCATE oferta, fuente, aviso").update();
+        jdbc.sql("TRUNCATE oferta, fuente, aviso, lectura_dia").update();
         reloj.reiniciar();
         FUENTES.reiniciar();
+        FUENTES.usarReloj(reloj);
     }
 
     protected RestTestClient.ResponseSpec patchIdentificado(String ruta, String json) {
@@ -111,6 +112,13 @@ public abstract class PruebaHttp {
                 .header("Origin", ORIGEN_PANEL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{\"version\":\"" + id + "\"}")
+                .exchange();
+    }
+
+    protected RestTestClient.ResponseSpec postIdentificado(String ruta) {
+        return cliente.post().uri(ruta)
+                .header(CABECERA_ACCESS, ACCESS.codigoValido())
+                .header("Origin", ORIGEN_PANEL)
                 .exchange();
     }
 

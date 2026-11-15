@@ -14,8 +14,13 @@ API de perfil.tacuchi.net: guarda las versiones del CV y entrega la vigente en `
 | `GET /api/ofertas` | persona | Lista de ofertas. Sin filtros: nuevas de encaje alto y medio. Filtros: `encaje`, `estado`, `fuente`, `modalidad` (uno o varios, separados por coma), `tecnologia`, `desde` y `hasta` (`AAAA-MM-DD`, días de Lima). |
 | `GET /api/ofertas/{id}` | persona | Una oferta con su texto y, si lo trae, el correo de contacto. |
 | `PATCH /api/ofertas/{id}` | persona | `{"estado": "GUARDADA" \| "DESCARTADA" \| "POSTULADA"}`. La postulada guarda su fecha. |
-| `GET /api/fuentes` | persona | Estado de cada fuente: `CORRECTA`, `FALLO`, `BLOQUEO` o `SIN_LEER`, con su última lectura correcta. |
+| `GET /api/fuentes` | persona | Estado de cada fuente: `CORRECTA`, `FALLO`, `BLOQUEO` o `SIN_LEER`, con su última lectura correcta y las lecturas que le quedan hoy (`lecturasRestantes`). |
+| `POST /api/recoleccion` | persona | Lanza ahora la lectura de todas las fuentes con lecturas disponibles hoy. Responde `202` con lo que va a leer y lo omitido por tope; lee en segundo plano. |
+| `POST /api/recoleccion/{fuente}` | persona | Lanza ahora la lectura de una fuente. |
+| `GET /api/recoleccion` | persona | Avance de la recolección en curso (programada o a demanda) o resultado de la última: cada fuente lanzada como `PENDIENTE`, `LEYENDO` o `TERMINADA`, con su resultado. |
 | `GET /api/tecnologias` | persona | Tecnologías del CV con las que se clasifica, principales y secundarias. |
+
+Un lanzamiento se rechaza con `409` y su `motivo`: `EN_CURSO` (ya corre otra), `TOPE_DIARIO` (la fuente ya recibió sus lecturas de hoy) o `SIN_FUENTES` (ninguna tiene lecturas disponibles).
 
 «Persona» = petición con el código de Cloudflare Access (`Cf-Access-Jwt-Assertion`) válido para la aplicación y el correo configurados. Los cambios además exigen `Origin` igual a la dirección del panel.
 
@@ -44,7 +49,8 @@ El correo diario va solo a `PERFIL_ACCESS_CORREO`. Las direcciones de las tres f
 
 ## Monitor de ofertas
 
-- **Fuentes:** Get on Board, Remotive y Remote OK, por la API pública que cada una declara. Cada hora se intenta la recolección, pero cada fuente se lee una sola vez por día de Lima, contado en la base de datos. Ante un fallo o un bloqueo la fuente queda marcada y no se prueba otra vía.
+- **Fuentes:** Get on Board, Remotive y Remote OK, por la API pública que cada una declara. Cada hora se intenta la recolección programada, que lee una vez al día cada fuente que ese día aún no tiene lecturas. La persona puede lanzarla a demanda desde el panel. Cada fuente recibe como máximo 3 lecturas por día de Lima, programadas y a demanda, terminen bien o no: cada lectura se cuenta en la base (`lectura_dia`) antes de pedirla al sitio. Ante un fallo o un bloqueo la fuente queda marcada y no se prueba otra vía; la programada no la reintenta.
+- **Una recolección a la vez:** el candado y el avance viven en memoria, así que la API corre como una sola instancia.
 - **Clasificación:** reglas fijas en `clasificacion/Clasificador.java`. Las tecnologías del CV están en `src/main/resources/ofertas/tecnologias.json`, copiadas a mano del hub; si el CV cambia, hay que copiarlas de nuevo.
 - **Conservación:** las nuevas y las descartadas se eliminan 60 días después de vistas por última vez; las guardadas y las postuladas se conservan.
 - **Esquema:** `src/main/resources/db/migration/`, aplicado por Flyway al arrancar.
@@ -57,9 +63,11 @@ Requiere JDK 25. `./mvnw verify` corre todas las pruebas, sobre un PostgreSQL 18
 
 | Mando | Qué hace |
 |---|---|
-| `POST /api/local/recoger` | Recoge ahora (cada fuente, una vez por día del reloj local). |
-| `POST /api/local/dia-siguiente` | Adelanta el reloj un día y recoge. |
+| `POST /api/local/recoger` | Corre la programada y espera a que termine (cada fuente sin lecturas en el día del reloj local). |
+| `POST /api/local/programada` | Dispara la programada en segundo plano y responde sin esperarla. |
+| `POST /api/local/dia-siguiente` | Adelanta el reloj un día y dispara la programada sin esperarla. |
 | `PUT /api/local/fuentes/{fuente}?modo=BIEN\|FALLA\|BLOQUEA` | Hace que una fuente responda bien, falle o bloquee. |
+| `PUT /api/local/fuentes/{fuente}/pausa?activa=true\|false` | La fuente recibe las peticiones y retiene la respuesta hasta que se la suelta (máximo 50 s), para ver el paso «leyendo». |
 | `GET /api/local/correos` | Asunto y destinatarios de los correos recibidos. |
 
 Nada de esto entra al jar. El contrato del almacén corre también contra R2 cuando están definidas las cuatro variables `PERFIL_ALMACEN_*`.
