@@ -119,6 +119,10 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<!-- spring-boot:test-run levanta el arranque local, que vive en las pruebas. -->
+					<testMainClass>net.tacuchi.perfil.PerfilApiLocal</testMainClass>
+				</configuration>
 			</plugin>
 			<!-- Mockito como agente declarado: los JDK recientes rechazan que se adjunte solo. -->
 			<plugin>

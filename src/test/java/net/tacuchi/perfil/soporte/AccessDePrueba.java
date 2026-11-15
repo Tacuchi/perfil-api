@@ -55,7 +55,11 @@ public final class AccessDePrueba {
     }
 
     public String codigoValido() {
-        return firmar(clave, emisor(), AUD, CORREO, Instant.now().plus(Duration.ofHours(1)));
+        return codigoValido(Duration.ofHours(1));
+    }
+
+    public String codigoValido(Duration vigencia) {
+        return firmar(clave, emisor(), AUD, CORREO, Instant.now().plus(vigencia));
     }
 
     public String codigoVencido() {
@@ -83,6 +87,8 @@ public final class AccessDePrueba {
     }
 
     private static String firmar(RSAKey firma, String emisor, String aud, String correo, Instant vence) {
+        // Emitido ahora; un código vencido se emitió antes de su vencimiento.
+        Instant emitido = Instant.now().isBefore(vence) ? Instant.now() : vence.minus(Duration.ofHours(1));
         try {
             SignedJWT jwt = new SignedJWT(
                     new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(firma.getKeyID()).type(JOSEObjectType.JWT).build(),
@@ -90,8 +96,8 @@ public final class AccessDePrueba {
                             .issuer(emisor)
                             .audience(List.of(aud))
                             .claim("email", correo)
-                            .issueTime(Date.from(vence.minus(Duration.ofHours(2))))
-                            .notBeforeTime(Date.from(vence.minus(Duration.ofHours(2))))
+                            .issueTime(Date.from(emitido))
+                            .notBeforeTime(Date.from(emitido))
                             .expirationTime(Date.from(vence))
                             .build());
             jwt.sign(new RSASSASigner(firma));

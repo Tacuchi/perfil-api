@@ -32,7 +32,9 @@ Todo llega por variables de entorno; si falta una, el servicio no arranca y la n
 
 ## Desarrollo
 
-Requiere JDK 25. `./mvnw verify` corre todas las pruebas. El contrato del almacén corre también contra R2 cuando están definidas las cuatro variables `PERFIL_ALMACEN_*`.
+Requiere JDK 25. `./mvnw verify` corre todas las pruebas.
+
+`./mvnw spring-boot:test-run` levanta la API en `http://localhost:8080` para recorrerla con el panel: almacén en memoria, un sitio de prueba para la página 404 y un Access de prueba que publica sus claves en local. El código firmado para la persona queda en `target/codigo-local.jwt`; el panel lo envía con `PERFIL_CODIGO_LOCAL="$(cat target/codigo-local.jwt)" npm start`. Nada de esto entra al jar. El contrato del almacén corre también contra R2 cuando están definidas las cuatro variables `PERFIL_ALMACEN_*`.
 
 ## Despliegue
 

@@ -1,14 +1,10 @@
 package net.tacuchi.perfil.soporte;
 
-import net.tacuchi.perfil.almacen.AlmacenArchivos;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -19,7 +15,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 /** Base de las pruebas por HTTP: la API real en un puerto, Access y sitio de prueba, almacén en memoria. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
-@Import(PruebaHttp.AlmacenDePrueba.class)
+@Import(AlmacenDePruebaConfig.class)
 public abstract class PruebaHttp {
 
     public static final String CABECERA_ACCESS = "Cf-Access-Jwt-Assertion";
@@ -103,15 +99,5 @@ public abstract class PruebaHttp {
     }
 
     public record VersionLeida(String id, String fecha, boolean conWord, boolean vigente) {
-    }
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class AlmacenDePrueba {
-
-        @Bean
-        @Primary
-        AlmacenEnMemoria almacenEnMemoria() {
-            return new AlmacenEnMemoria();
-        }
     }
 }
