@@ -1,0 +1,30 @@
+{
+  "copiado": "2026-11-15",
+  "origen": "Principales: aptitudes principales de perfil/linkedin.md. Secundarias: el resto de cv/cv.json. Si el CV cambia, se copian de nuevo.",
+  "principales": [
+    { "nombre": "Flutter", "patrones": ["flutter"] },
+    { "nombre": "Android", "patrones": ["android"] },
+    { "nombre": "Angular", "patrones": ["angular"] },
+    { "nombre": "Spring Boot", "patrones": ["spring boot", "springboot", "spring framework", "spring cloud"] },
+    { "nombre": "MCP", "patrones": ["mcp", "model context protocol"] }
+  ],
+  "secundarias": [
+    { "nombre": "Dart", "patrones": ["dart"] },
+    { "nombre": "Kotlin", "patrones": ["kotlin"] },
+    { "nombre": "Jetpack Compose", "patrones": ["jetpack compose"] },
+    { "nombre": "TypeScript", "patrones": ["typescript"] },
+    { "nombre": "Astro", "patrones": ["astro"] },
+    { "nombre": "Tailwind CSS", "patrones": ["tailwind"] },
+    { "nombre": "Java", "patrones": ["java"] },
+    { "nombre": "PostgreSQL", "patrones": ["postgresql", "postgres"] },
+    { "nombre": "Firebase", "patrones": ["firebase"] },
+    { "nombre": "Node.js", "patrones": ["node.js", "nodejs"] },
+    { "nombre": "Python", "patrones": ["python"] },
+    { "nombre": "SQLite", "patrones": ["sqlite"] },
+    { "nombre": "Git", "patrones": ["git"] },
+    { "nombre": "Docker", "patrones": ["docker"] },
+    { "nombre": "Kubernetes", "patrones": ["kubernetes", "k8s"] },
+    { "nombre": "Coolify", "patrones": ["coolify"] },
+    { "nombre": "Cloudflare", "patrones": ["cloudflare"] }
+  ]
+}

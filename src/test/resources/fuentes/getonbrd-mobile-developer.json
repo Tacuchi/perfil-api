@@ -1,0 +1,408 @@
+{
+ "data": [
+  {
+   "id": "android-software-engineer-improving-remote",
+   "type": "job",
+   "attributes": {
+    "title": "Android Software Engineer",
+    "description_headline": "Required Technical Skills & Experience",
+    "description": "<p>Strong knowledge of and experience with:</p><ul><li>Kotlin and Java</li><li>Jetpack Compose</li><li>Android Views and Material Design</li><li>ViewModels</li><li>Unidirectional data flow</li><li>Kotlin Coroutines and Flow</li><li>Clean Architecture</li><li>Dependency Injection using Hilt/Dagger</li><li>Room and SQLite, including:<ul><li>Schema design</li><li>Database migrations</li><li>Efficient queries</li></ul></li><li>Offline-first application development, including:<ul><li>Background work</li><li>Data synchronization</li><li>WorkManager</li></ul></li><li>RESTful APIs using:<ul><li>Retrofit</li><li>OkHttp</li></ul></li><li>CI/CD concepts, including:<ul><li>Build and release pipelines</li><li>Automated testing</li><li>Gradle build configuration</li></ul></li><li>Software security principles and practices, including:<ul><li>Common vulnerabilities</li><li>Secure coding methodologies<p>WE NEED ADVANCED ENGLISH SKILLS</p></li></ul></li></ul>",
+    "projects": "<p>As a Senior Software Developer, you will be responsible for independently enhancing <strong>the client’s Android products</strong> across the entire software development lifecycle.</p><p>This includes developing, testing, and deploying high-quality software features, ensuring clean, well-tested code that meets coding standards.</p><p>You will analyze <strong>the client’s Android products</strong>, local database schemas, and architecture to identify and implement valuable improvements, including significant features.Collaboration within an Agile development team is essential. You will actively participate in code reviews and team discussions to improve product architecture and contribute to continuous improvement.</p><p>Additionally, your contributions will include mentoring other developers, engaging in technical discussions, managing complex production escalations, and leading projects.</p>",
+    "functions_headline": "Key Responsibilities",
+    "functions": "<ul><li>Deeply understand and analyze your assigned client product(s), database schema, and architecture for improvements that can increase value, including ROI and benefit to the team. </li><li>Lead the design and implementation of major software modules or features. </li><li>Develop, test, and deploy high-quality software. </li><li>Write clean, maintainable, and well-tested code that meets established coding standards. </li><li>Participate actively in code reviews and technical discussions. </li><li>Contribute to improvements in product architecture. Identify and implement valuable improvements across Android products. </li><li>Collaborate effectively within an Agile development team. </li><li>Mentor other developers and contribute to their technical growth. Participate in technical discussions and help drive engineering decisions. </li><li>Manage complex production escalations. </li><li>Lead projects and significant development initiatives. </li><li>Contribute to continuous improvement across the development lifecycle.</li></ul>",
+    "benefits_headline": "",
+    "benefits": "",
+    "desirable_headline": "Nice to have",
+    "desirable": "<ul><li>Experience with Firebase, static analysis tools and perfo proof ling. </li><li>Experience with CammeraX , ML, Kit, PDF tooling , Google Maps /Location or push notification and chat integrations. </li><li>Comprehensive knowledge of software security principles and practices, including common vulnerabilities and secure coding methodologies. </li><li>Experience with Koin dependency injection. </li><li>Understanding of devops culture and practices beyond just CI CD m encompassing monitoring , logging and incident response. </li></ul>",
+    "remote": true,
+    "remote_modality": "remote_local",
+    "remote_zone": null,
+    "countries": [
+     "Remote"
+    ],
+    "lang": "en",
+    "category_name": "Mobile Development",
+    "perks": [
+     "computer_provided",
+     "vacation_over_legal"
+    ],
+    "min_salary": null,
+    "max_salary": null,
+    "published_at": 1793980252,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 53,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": [
+      {
+       "id": 24,
+       "type": "location_tenant"
+      },
+      {
+       "id": 3,
+       "type": "location_tenant"
+      },
+      {
+       "id": 7,
+       "type": "location_tenant"
+      },
+      {
+       "id": 6,
+       "type": "location_tenant"
+      },
+      {
+       "id": 2,
+       "type": "location_tenant"
+      }
+     ]
+    },
+    "location_cities": {
+     "data": []
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 4,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 2,
+       "type": "tag"
+      },
+      {
+       "id": 251,
+       "type": "tag"
+      },
+      {
+       "id": 422,
+       "type": "tag"
+      },
+      {
+       "id": 1687,
+       "type": "tag"
+      },
+      {
+       "id": 1724,
+       "type": "tag"
+      },
+      {
+       "id": 2678,
+       "type": "tag"
+      },
+      {
+       "id": 37168,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "improving",
+      "type": "company",
+      "attributes": {
+       "name": "Improving",
+       "description": "Improving is an IT services firm focused on AI, Data, and Applications. We modernize legacy systems, build cloud-native platforms, and deliver future-ready solutions through collaborative, long-term partnerships that drive measurable outcomes.",
+       "long_description": "<p>Improving is dedicated to creating and fostering a great work culture that exemplifies teamwork, excellence, and fun. We believe this inspires and motivates everyone while building lifelong relationships. Improving has long supported the Conscious Capitalism movement. We work to serve the interests of all our stakeholders, building trust along the way.</p><p>Providing an exceptional work culture is at the forefront of everything we do. By creating an environment that fosters joy, we believe our people will feel inspired and motivated, while also building strong personal and professional relationships. At Improving, our optimistic approach to open communication, personal growth, and shared rewards has led to our sustainable success. At the heart of Improving is our set of core values.</p>",
+       "projects": "<div>En Improving South America, brindamos servicios de TI para transformar la percepción del profesional de TI. Nos enfocamos en consultoría de TI, desarrollo de software y formación ágil.&nbsp;</div><div>La empresa promueve una cultura de trabajo excepcional basada en el trabajo en equipo, la excelencia y la diversión, con enfoque en crecimiento personal y recompensas compartidas. Al integrarse, el/la candidato/a formará parte de una comunidad que prioriza la comunicación abierta y relaciones laborales sólidas a largo plazo, respaldada por una estructura de desarrollo profesional y aprendizaje continuo.</div>",
+       "benefits": "<ul><li>Contrato a largo plazo.</li><li>100% Remoto.</li><li>Vacaciones y PTOs</li><li>Posibilidad de recibir 2 bonos al año.</li><li>2 revisiones salariales al año.</li><li>Clases de inglés.</li><li>Equipamiento Apple.</li><li>Plataforma de cursos en linea</li><li>Budget para compra de libros.</li><li>Budget para compra de materiales de trabajo</li><li>mucho mas..</li></ul>",
+       "web": "https://www.improving.com/",
+       "twitter": "ImprovingSAM",
+       "github": "improving",
+       "facebook": "improvingdallas",
+       "angellist": "",
+       "country": "US",
+       "response_time_in_days": {
+        "min": 12,
+        "max": 26
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/4161/improving-splash-200px.png"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/android-software-engineer-improving-remote"
+   }
+  },
+  {
+   "id": "founding-ios-engineer-swift-hostop-remote",
+   "type": "job",
+   "attributes": {
+    "title": "Founding iOS Engineer (Swift)",
+    "description_headline": "Qualifications and requirements",
+    "description": "<ul><li>6+ years building iOS apps natively in Swift.</li><li><strong>You’ve shipped multiple apps to the App Store</strong>, ideally B2B or SaaS products, and owned the release process end to end.</li><li>Expert in Swift, SwiftUI and UIKit, Swift concurrency and Xcode.</li><li>Deep knowledge of Apple’s Human Interface Guidelines, App Store Review Guidelines, privacy manifests and App Store Connect.</li><li>Adaptive layouts across iPhone sizes and form factors, including iPhone Duo and iOS 27 multitasking.</li><li>Push notifications (APNs), deep links, background tasks, Keychain and authentication.</li><li>Networking with REST and real-time APIs. Supabase or Postgres experience is a plus.</li><li>Performance tuning with Instruments, crash reporting and CI/CD with Xcode Cloud or Fastlane.</li><li>Testing with XCTest or Swift Testing.</li><li>Excellent written and spoken English, and 8 hours a day during US Eastern business hours.</li></ul>",
+    "projects": "<p>HostOp is the AI operating system for short-term rental operators with 10 to 500 listings. One platform runs guest check-in, ID verification, damage waivers, upsells, payments and financials, with AI guest messaging next. It’s live with paying operators.</p><p>We’re founder-led and bootstrapped, built by a founder who scaled his own rental business to 400+ units. Our web platform runs on Next.js and TypeScript with a Supabase backend.</p><p><strong>Now we’re building the HostOp iOS app, natively in Swift, iOS first.</strong> You’ll be our first mobile engineer and own it end to end: architecture, build, App Store release and everything after. Our design studio delivers every screen in Figma, and you’ll work with our engineers across Latin America and directly with the founder.</p>",
+    "functions_headline": "Job functions",
+    "functions": "<p>You’ll build a native iOS app operators use all day: approving guest requests, checking arrivals, answering messages and watching revenue. <strong>It should feel like Apple made it.</strong></p><p><strong>What you’ll do</strong></p><ul><li>Architect and build the HostOp iOS app in Swift and SwiftUI, on top of our existing APIs.</li><li>Turn Figma designs into polished screens that follow Apple’s Human Interface Guidelines.</li><li>Make every screen adapt across iPhones, from the largest Pro Max to the foldable iPhone Duo, with Dynamic Type, Dark Mode and orientation changes.</li><li>Build the Apple-native features: push notifications, widgets, Live Activities, App Intents, Face ID and Apple Wallet passes.</li><li>Own the App Store pipeline: signing, TestFlight, App Store Connect, privacy labels, review guidelines and releases.</li><li>Set up crash reporting, analytics and CI/CD with Xcode Cloud or Fastlane.</li><li>Keep the app fast, smooth and live-updating, profiled with Instruments.</li><li>Partner with our designers on iOS patterns and with our engineers on the APIs the app needs.</li><li>Help plan Android as a later, separate release.</li></ul><p><strong>First 90 days</strong></p><ol><li>Days 1–30: learn the product, set the app architecture, ship an internal TestFlight build.</li><li>Days 31–60: core flows working end to end, push notifications live, beta with real operators.</li><li>Days 61–90: v1 submitted to the App Store.</li></ol><p><strong>How to apply</strong></p><ol><li>Links to iOS apps you shipped to the App Store and what you built in each.</li><li>A 3-minute Loom walking through one app’s architecture and the hardest problem you solved.</li><li>How you’d make one screen work on both the largest Pro Max and iPhone Duo.</li></ol><p>Shortlisted candidates do a paid technical task.</p>",
+    "benefits_headline": "Conditions",
+    "benefits": "<ul><li>Full-time, 100% remote from Latin America</li><li><strong>$5500–$6,500 USD per month</strong>, based on experience</li><li>8 hours a day, Monday to Friday, during US Eastern business hours</li><li>Own the iOS product from day one, reporting to the founder</li><li>Start as soon as possible</li></ul>",
+    "desirable_headline": "Desirable skills",
+    "desirable": "<ul><li>Android and Kotlin (Android is our second release)</li><li>WidgetKit, ActivityKit, App Intents and PassKit (Apple Wallet)</li><li>Hospitality, property management or fintech apps</li><li>Stripe iOS SDK and Apple Pay</li><li>On-device AI with Apple’s frameworks</li><li>Accessibility and VoiceOver expertise</li></ul>",
+    "remote": true,
+    "remote_modality": "fully_remote",
+    "remote_zone": null,
+    "countries": [
+     "Remote"
+    ],
+    "lang": "en",
+    "category_name": "Mobile Development",
+    "perks": [
+     "remote_full",
+     "flexible_hours"
+    ],
+    "min_salary": 5500,
+    "max_salary": 6500,
+    "published_at": 1793720811,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 45,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": []
+    },
+    "location_cities": {
+     "data": []
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 4,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 98,
+       "type": "tag"
+      },
+      {
+       "id": 642,
+       "type": "tag"
+      },
+      {
+       "id": 2206,
+       "type": "tag"
+      },
+      {
+       "id": 2303,
+       "type": "tag"
+      },
+      {
+       "id": 5732,
+       "type": "tag"
+      },
+      {
+       "id": 37126,
+       "type": "tag"
+      },
+      {
+       "id": 38225,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "hostop",
+      "type": "company",
+      "attributes": {
+       "name": "Hostop",
+       "description": "HostOp is the AI operating system for short-term rental operators. One platform runs guest check-in, ID verification, damage waivers, upsells and payments, plus revenue, expenses and profit for every unit. Founder-led and bootstrapped by operator ",
+       "long_description": "",
+       "projects": null,
+       "benefits": "<ul><li>Full-time, 100% remote from Latin America</li><li><strong>$4,500–$6,000 USD per month base</strong>, plus uncapped bonuses for every qualified demo held and every demo that becomes a paying customer</li><li>Report directly to the Founder &amp; CEO, with real ownership from day one</li><li>Start as soon as possible</li></ul>",
+       "web": "http://hostop.ai",
+       "twitter": "",
+       "github": "",
+       "facebook": "",
+       "angellist": null,
+       "country": "CA",
+       "response_time_in_days": {
+        "min": null,
+        "max": null
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/20908/hostop-logo-512.png"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/founding-ios-engineer-swift-hostop-remote"
+   }
+  },
+  {
+   "id": "desarrollad-r-mobile-ctv-mediastream-bogota-9881",
+   "type": "job",
+   "attributes": {
+    "title": "Desarrollad@R Mobile",
+    "description_headline": "Perfil y requisitos técnicos",
+    "description": "<p>Buscamos una persona apasionada por el desarrollo mobile, con un conocimiento técnico integral del ecosistema React Native y habilidades sólidas para trabajar con desarrollo nativo en Roku, LG, Tizen, Apple TV, Android TV, iOS/Android</p><p><strong>Experiencia técnica requerida:</strong></p><ul><li>Mínimo 3 años de experiencia en desarrollo de aplicaciones mobile.</li><li>Al menos 2 años desarrollando en producción con React Native, demostrando capacidad para liderar la implementación y escalabilidad de apps multiplataforma.</li><li>Dominio sólido en desarrollo nativo para Android usando Java y Kotlin, así como para iOS con Swift y Objective-C; idealmente experiencia en ambos sistemas.</li><li>Conocimiento avanzado de JavaScript moderno, incluyendo manejo de asincronía y patrones de diseño relevantes para apps mobile.</li><li>Experiencia profunda en integración con APIs REST y GraphQL, asegurando un manejo eficiente de los datos y la comunicación cliente-servidor.</li><li>Capacidad para gestionar navegación dentro de la app y manejo robusto de estados, utilizando librerías o arquitecturas adecuadas.</li><li>Destrezas en debugging de código y performance tuning para garantizar que las aplicaciones funcionen de manera óptima en diversos dispositivos y condiciones de red.</li><li>Competencias en crear e integrar módulos nativos como extensiones para React Native, mejorando funcionalidades cuando la librería base es insuficiente.</li></ul>",
+    "projects": "<div>Mediastream es líder en tecnología de streaming con 18 años de experiencia. Ofrecemos una plataforma integral para administrar, distribuir y producir contenido audiovisual, conectando grandes empresas y emisoras con sus audiencias. Nuestro objetivo es optimizar la experiencia del usuario y generar ingresos con soluciones tecnológicas propias y soporte 24/7. El área de Live Streaming es fundamental, gestionando transmisiones en vivo con tecnología avanzada para una experiencia impactante.</div>",
+    "functions_headline": "Responsabilidades principales",
+    "functions": "<p>Como desarrollador mobile en Mediastream, formarás parte de un equipo técnico especializado encargado de diseñar, implementar y mantener aplicaciones móviles multiplataforma que soportan la experiencia audiovisual de nuestros clientes. Tendrás la responsabilidad de:</p><ul><li>Desarrollar aplicaciones usando React Native que sean eficientes, escalables y con alto rendimiento en dispositivos Android e iOS.</li><li>Integrar módulos nativos en Android (Java/Kotlin) y iOS (Swift/Objective-C) para complementar funcionalidades específicas que requieren acceso profundo al hardware o al sistema operativo móvil.</li><li>Colaborar estrechamente con equipos de backend para la integración de APIs REST y GraphQL garantizando transporte eficiente y seguro de datos.</li><li>Optimizar la navegación y el manejo de estados para mejorar la experiencia del usuario, evitando cuellos de botella y problemas de rendimiento.</li><li>Realizar debugging avanzado y aplicar técnicas de optimización específicas para entornos móviles.</li><li>Crear y mantener módulos SDK nativos, facilitando su uso dentro del entorno React Native.</li><li>Participar activamente en la mejora continua de procesos y prácticas de desarrollo, incluyendo la integración continua y entrega continua (CI/CD).</li><li>Trabajar de manera coordinada con diseñadores utilizando herramientas como Figma para asegurar la correcta implementación de interfaces visuales y usabilidad.</li></ul>",
+    "benefits_headline": "Beneficios y cultura",
+    "benefits": "<div>En Mediastream ofrecemos un entorno laboral dinámico y colaborativo que fomenta la innovación constante y el crecimiento profesional continuo. Promovemos una cultura inclusiva basada en el apoyo mutuo y el desarrollo tanto personal como profesional. Contamos con amplias oportunidades de capacitación en tecnologías de vanguardia y trabajamos en conjunto con un equipo de alto nivel para enfrentar desafíos relevantes dentro de la industria del streaming y distribución audiovisual.</div>",
+    "desirable_headline": "Conocimientos y habilidades deseables",
+    "desirable": "<ul><li>Experiencia en integración y uso de servicios Firebase, aprovechando sus características para análisis, autenticación y mensajería push.</li><li>Familiaridad con prácticas CI/CD en proyectos móviles, incluyendo automatización de compilaciones, pruebas y despliegues.</li><li>Experiencia en trabajo con herramientas de diseño como Figma para asegurar la fidelidad en el producto final.</li><li>Conocimiento en el uso de librerías avanzadas para animaciones, mapas o multimedia en React Native.</li><li>Participación en proyectos open source o contribuciones a la comunidad React Native o desarrollo móvil en general.</li></ul>",
+    "remote": true,
+    "remote_modality": "remote_local",
+    "remote_zone": null,
+    "countries": [
+     "Remote"
+    ],
+    "lang": "lang_not_specified",
+    "category_name": "Mobile Development",
+    "perks": [
+     "health_coverage",
+     "computer_provided",
+     "informal_dresscode"
+    ],
+    "min_salary": null,
+    "max_salary": null,
+    "published_at": 1793106844,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 137,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": [
+      {
+       "id": 21,
+       "type": "location_tenant"
+      },
+      {
+       "id": 27,
+       "type": "location_tenant"
+      },
+      {
+       "id": 2,
+       "type": "location_tenant"
+      },
+      {
+       "id": 3,
+       "type": "location_tenant"
+      },
+      {
+       "id": 28,
+       "type": "location_tenant"
+      },
+      {
+       "id": 7,
+       "type": "location_tenant"
+      }
+     ]
+    },
+    "location_cities": {
+     "data": []
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 3,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 1,
+       "type": "tag"
+      },
+      {
+       "id": 2,
+       "type": "tag"
+      },
+      {
+       "id": 97,
+       "type": "tag"
+      },
+      {
+       "id": 98,
+       "type": "tag"
+      },
+      {
+       "id": 157,
+       "type": "tag"
+      },
+      {
+       "id": 171,
+       "type": "tag"
+      },
+      {
+       "id": 251,
+       "type": "tag"
+      },
+      {
+       "id": 11838,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "mediastream--2",
+      "type": "company",
+      "attributes": {
+       "name": "Mediastream",
+       "description": "Más de 18 años liderando la tecnología streaming, trabajando con grandes empresas y broadcasters en todo el mundo.\n",
+       "long_description": "<p>Somos un <strong>equipo profesional</strong> dedicado a crear una experiencia extraordinaria en la visualización del contenido audiovisual de nuestros clientes, por eso desarrollamos nuestras propias herramientas para satisfacer las necesidades de la audiencia digital de hoy.</p><p>Ofrecemos una <strong>solución end-to-end</strong> donde nuestro valor agregado es el acompañamiento que le brindamos a los clientes. Creemos en ellos desde su primera necesidad de gestionar y transmitir el contenido, adaptamos nuestros productos a medida y entregamos soluciones para conocer cómo se comporta el público mientras consume el contenido.Por eso, contamos con el mejor servicio personalizado y <strong>soporte 24/7 para cada necesidad</strong>.</p>",
+       "projects": "<div><strong>Mediastream</strong> es una empresa con más de 12 años liderando la tecnología de streaming, trabajando con grandes empresas y broadcasters a nivel mundial. Nuestro equipo profesional crea una experiencia extraordinaria en la visualización de contenido audiovisual y desarrollamos herramientas propias para satisfacer las necesidades de la audiencia digital actual. Ofrecemos una solución end-to-end, con un acompañamiento cercano a los clientes y un servicio personalizado 24/7. En Mediastream, gestionamos proyectos SaaS orientados a transformar la captación, distribución y análisis del contenido de nuestros clientes, con un enfoque en soluciones para organizaciones que demandan alta disponibilidad, escalabilidad y rendimiento en entornos de streaming.</div>",
+       "benefits": "<p>En Mediastream ofrecemos un entorno laboral dinámico y colaborativo que fomenta la innovación constante y el crecimiento profesional continuo. Promovemos una cultura inclusiva basada en el apoyo mutuo y el desarrollo tanto personal como profesional. Contamos con amplias oportunidades de capacitación en tecnologías de vanguardia y trabajamos en conjunto con un equipo de alto nivel para enfrentar desafíos relevantes dentro de la industria del streaming y distribución audiovisual.<br><br></p>",
+       "web": "http://mediastre.am",
+       "twitter": "mediastream",
+       "github": "",
+       "facebook": "",
+       "angellist": "",
+       "country": "CL",
+       "response_time_in_days": {
+        "min": 8,
+        "max": 20
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/1436/Avatar_MS___1_2x.png"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/desarrollad-r-mobile-ctv-mediastream-bogota-9881"
+   }
+  }
+ ],
+ "meta": {
+  "page": 1,
+  "per_page": 50,
+  "total_pages": 1
+ }
+}

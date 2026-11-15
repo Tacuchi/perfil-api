@@ -29,6 +29,11 @@ class AccesoTest extends PruebaHttp {
                 Arguments.of(HttpMethod.GET, "/api/versiones/" + ID + "/pdf"),
                 Arguments.of(HttpMethod.GET, "/api/versiones/" + ID + "/word"),
                 Arguments.of(HttpMethod.PUT, "/api/vigente"),
+                Arguments.of(HttpMethod.GET, "/api/ofertas"),
+                Arguments.of(HttpMethod.GET, "/api/ofertas/1"),
+                Arguments.of(HttpMethod.PATCH, "/api/ofertas/1"),
+                Arguments.of(HttpMethod.GET, "/api/fuentes"),
+                Arguments.of(HttpMethod.GET, "/api/tecnologias"),
                 Arguments.of(HttpMethod.GET, "/cualquier/otra"),
                 Arguments.of(HttpMethod.GET, "/cv/extra"),
                 Arguments.of(HttpMethod.POST, "/cv"));
@@ -93,5 +98,19 @@ class AccesoTest extends PruebaHttp {
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(almacen.claves()).isEmpty();
+        cliente.patch().uri("/api/ofertas/1")
+                .header(CABECERA_ACCESS, ACCESS.codigoValido())
+                .header("Origin", "https://otro-sitio.test")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"estado\":\"DESCARTADA\"}")
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void conCodigoValidoLaPersonaVeLasOfertasYLasFuentes() {
+        getIdentificado("/api/ofertas").expectStatus().isOk().expectBody().json("[]");
+        getIdentificado("/api/fuentes").expectStatus().isOk();
+        getIdentificado("/api/tecnologias").expectStatus().isOk();
     }
 }

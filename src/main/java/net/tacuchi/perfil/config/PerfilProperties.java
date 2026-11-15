@@ -3,6 +3,7 @@ package net.tacuchi.perfil.config;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
@@ -20,7 +21,9 @@ public record PerfilProperties(
         @Valid @DefaultValue Almacen almacen,
         @Valid @DefaultValue Cv cv,
         @Valid @DefaultValue Sitio sitio,
-        @Valid @DefaultValue Panel panel) {
+        @Valid @DefaultValue Panel panel,
+        @Valid @DefaultValue Ofertas ofertas,
+        @Valid @DefaultValue Aviso aviso) {
 
     private static final String URL = "https?://\\S+";
     private static final String URL_INVALIDA = "debe ser una URL http(s)";
@@ -50,5 +53,23 @@ public record PerfilProperties(
 
     /** Dirección del panel: el único origen desde el que se aceptan cambios. */
     public record Panel(@NotBlank @Pattern(regexp = URL, message = URL_INVALIDA) String origen) {
+    }
+
+    /**
+     * Monitor de ofertas: dirección de cada fuente y cuándo se intenta la recolección. Cada fuente se lee
+     * como máximo una vez por día aunque el horario se dispare más veces.
+     */
+    public record Ofertas(
+            @NotBlank @Pattern(regexp = URL, message = URL_INVALIDA) String getonbrdUrl,
+            @NotBlank @Pattern(regexp = URL, message = URL_INVALIDA) String remotiveUrl,
+            @NotBlank @Pattern(regexp = URL, message = URL_INVALIDA) String remoteokUrl,
+            @NotBlank String cron) {
+    }
+
+    /**
+     * Correo diario a la persona (a {@code access.correo}). Se declara encendido o apagado: apagado, el resto
+     * funciona sin proveedor de correo. Encendido exige el remitente y el servidor de envío (spring.mail.*).
+     */
+    public record Aviso(@NotNull Boolean activo, @Email String remitente) {
     }
 }

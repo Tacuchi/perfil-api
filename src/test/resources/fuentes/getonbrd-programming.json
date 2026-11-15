@@ -1,0 +1,395 @@
+{
+ "data": [
+  {
+   "id": "semi-senior-full-stack-java-developer-qa-ai-bilingue-23people-santiago",
+   "type": "job",
+   "attributes": {
+    "title": "Semi Senior Full-Stack Java Developer (QA & AI) Bilingüe",
+    "description_headline": "Skills excluyentes",
+    "description": "<ul><li>Experiencia comprobable con Java y Spring Boot en proyectos reales.</li><li>Experiencia práctica trabajando con Angular.</li><li>Capacidad para realizar pruebas unitarias, de integración y de API en aplicaciones Java.</li><li>Uso diario de asistentes de programación basados en IA, como GitHub Copilot o similar.</li><li>Inglés fluido (Nivel B2+): Nivel suficiente para trabajar y comunicarse directamente con el equipo.</li></ul>",
+    "projects": "<div>Equifax es mucho más que una empresa de informes; es una compañía global líder en datos, analítica y tecnología con presencia en 24 países. En Chile, operan desde 1979 entregando soluciones críticas de ciberseguridad, identidad y riesgo a más de 14.000 empresas.</div><div>El Hub Tecnológico (SDC) Lo que hace única a esta oportunidad es que Chile alberga el Santiago Development Center (SDC). Este centro lidera la transformación digital de Equifax a nivel mundial, concentrando cerca del 60% de sus desarrollos tecnológicos globales.</div><div>Cultura y Visión Equifax promueve un entorno de colaboración y excelencia técnica, donde el talento local tiene el desafío de crear soluciones de impacto mundial. Su visión es clara: usar la data y la tecnología para potenciar la toma de decisiones financieras en todo el mundo.</div>",
+    "functions_headline": "Funciones del cargo",
+    "functions": "<p>El Semi Senior Full Stack Developer se integrará al equipo \"Credit Health\", participando en todo el ciclo de vida del desarrollo, desde el diseño hasta la puesta en producción. Construirá soluciones end-to-end utilizando Java, Spring Boot y Angular, apoyándose en IA y siendo guiado por su líder. Automatizará pruebas para asegurar la calidad de cada entrega y colaborará diariamente con el equipo en inglés fluido.</p>",
+    "benefits_headline": "Beneficios",
+    "benefits": "<ul><li><strong>Seguro complementario</strong>: Seguro de salud, vida y dental, para que estés protegido.</li><li><strong>Curso de inglés</strong>: En nuestro programa de formación en el idioma, ofrecemos dos modalidades para adaptarnos a tus necesidades y objetivos, con profesores nativos.</li><li><strong>Reembolso de certificaciones internacionales</strong>: Apoyamos el crecimiento profesional, por lo que te reembolsamos el costo de un examen de certificación internacional que quieras realizar.</li><li><strong>Bono de vacaciones</strong>: Recibe una compensación económica por cada semana de vacaciones que tomes. </li><li><strong>Aguinaldos en fiestas patrias y Navidad</strong>: Un bono en septiembre y en diciembre, para que la pases bien con tu familia. </li><li><strong>Día libre de cumpleaños</strong>: Puedes tomarlo el día previo, el mismo día, o el posterior a tu cumpleaños. </li><li><strong>Mejora tu espacio de trabajo:</strong> Te reembolsamos parte del costo de equipar tu home office para que trabajes cómodo y a gusto. </li><li><strong>Betterfly:</strong> App de bienestar que premia tus hábitos saludables con telemedicina, psicología y nutrición, sin costo. </li></ul>",
+    "desirable_headline": "Skills deseables",
+    "desirable": "<ul><li>Automatización de pruebas de interfaz de usuario (UI) con Playwright, Selenium o Cypress.</li><li>Experiencia ejecutando pruebas de regresión y pruebas de humo (\"smoke testing\").</li><li>Experiencia aportando valor de principio a fin (end-to-end) mediante el uso de IA en áreas Dev, QE y SRE.</li><li>Experiencia en metodologías SRE y creación de frameworks de pruebas desde cero.</li></ul><p><strong>¿Qué ofrecemos?</strong></p><p><strong>Rango salarial: $2.800.000 - $3.000.000 CLP líquidos.</strong></p><p><strong>Modalidad: Híbrido (3 días en la oficina y 2 días de Home Office).</strong></p><p><strong>Horario: 09:00 a 18:00 hrs (Horario Canadá).</strong></p><p><strong>Contrato: Proyecto inicial de 8 meses, con posible extensión.</strong></p>",
+    "remote": false,
+    "remote_modality": "hybrid",
+    "remote_zone": null,
+    "countries": [
+     "Chile"
+    ],
+    "lang": "lang_not_specified",
+    "category_name": "Programming",
+    "perks": [],
+    "min_salary": 2800,
+    "max_salary": 3000,
+    "published_at": 1794573989,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 77,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": []
+    },
+    "location_cities": {
+     "data": [
+      {
+       "id": 1,
+       "type": "location_city"
+      }
+     ]
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 3,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 2,
+       "type": "tag"
+      },
+      {
+       "id": 104,
+       "type": "tag"
+      },
+      {
+       "id": 587,
+       "type": "tag"
+      },
+      {
+       "id": 863,
+       "type": "tag"
+      },
+      {
+       "id": 888,
+       "type": "tag"
+      },
+      {
+       "id": 1589,
+       "type": "tag"
+      },
+      {
+       "id": 2754,
+       "type": "tag"
+      },
+      {
+       "id": 8508,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "23people-cl",
+      "type": "company",
+      "attributes": {
+       "name": "23people",
+       "description": "Básicamente, somos un grupo de geeks apasionados por lo que hacemos: programar y resolver problemas usando tecnología. 🤟",
+       "long_description": "<div><strong> En 23people ayudamos a nuestros clientes a digitalizar sus servicios, siempre con las personas en el centro. <br></strong><br></div><div>¿<strong>Cómo lo hacemos?<br></strong><br></div><ul><li><strong>Trabajo sustentable: </strong>cuidamos cómo trabajamos y a quienes lo hacen con nosotros y sí, incluso si es en modalidad <em>outsourcing. </em></li><li><strong>Agilidad de verdad: </strong>nos adaptamos rápido, entregamos valor desde el día uno y mejoramos tooodo el tiempo. </li><li><strong>Tecnología con criterio: </strong>la usamos de forma eficiente y creativa, y eso nos empuja a seguir creciendo profesionalmente. </li></ul><div>💜 ¡<strong>Nos encanta lo que hacemos!<br></strong><br></div><p>Somos especialistas JavaScript Fullstack en general. Creemos que DevOps es una forma de trabajo que debe estar siempre presente tal de lograr Continuous Delivery. Trabajamos con tecnologías de Front-end tales como ReactJS y Angular, Servicios Cloud de Amazon, Azure y Google. También trabajamos en app mobile nativas y en Progressive Web App. Tenemos también bastante experiencia en las tecnologías y frameworks asociados a JAVA y .NET.</p><p>One more thing… <strong>Somos una empresa del gremio MITI: ¡Mejor Industria TI en Chile!😎</strong></p>",
+       "projects": "<div>Equifax es mucho más que una empresa de informes; es una compañía global líder en datos, analítica y tecnología con presencia en 24 países. En Chile, operan desde 1979 entregando soluciones críticas de ciberseguridad, identidad y riesgo a más de 14.000 empresas.</div><div>El Hub Tecnológico (SDC) Lo que hace única a esta oportunidad es que Chile alberga el Santiago Development Center (SDC). Este centro lidera la transformación digital de Equifax a nivel mundial, concentrando cerca del 60% de sus desarrollos tecnológicos globales.</div><div>Cultura y Visión Equifax promueve un entorno de colaboración y excelencia técnica, donde el talento local tiene el desafío de crear soluciones de impacto mundial. Su visión es clara: usar la data y la tecnología para potenciar la toma de decisiones financieras en todo el mundo.</div>",
+       "benefits": "<ul><li><strong>Seguro complementario</strong>: Seguro de salud, vida y dental, para que estés protegido.</li><li><strong>Curso de inglés</strong>: En nuestro programa de formación en el idioma, ofrecemos dos modalidades para adaptarnos a tus necesidades y objetivos, con profesores nativos.</li><li><strong>Reembolso de certificaciones internacionales</strong>: Apoyamos el crecimiento profesional, por lo que te reembolsamos el costo de un examen de certificación internacional que quieras realizar.</li><li><strong>Bono de vacaciones</strong>:&nbsp; Recibe una compensación económica por cada semana de vacaciones que tomes.&nbsp;</li><li><strong>Aguinaldos en fiestas patrias y Navidad</strong>:&nbsp; Un bono en septiembre y en diciembre, para que la pases bien con tu familia.&nbsp;</li><li><strong>Día libre de cumpleaños</strong>:&nbsp; Puedes tomarlo el día previo, el mismo día, o el posterior a tu cumpleaños.&nbsp;</li><li>&nbsp;<strong>Mejora tu espacio de trabajo:</strong> Te reembolsamos parte del costo de equipar tu home office para que trabajes cómodo y a gusto.&nbsp;</li><li>&nbsp; <strong>Betterfly:</strong> App de bienestar que premia tus hábitos saludables con telemedicina, psicología y nutrición, sin costo.&nbsp;</li></ul>",
+       "web": "https://www.23people.io",
+       "twitter": "",
+       "github": "",
+       "facebook": "23people",
+       "angellist": "",
+       "country": "CL",
+       "response_time_in_days": {
+        "min": 0,
+        "max": 12
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/4457/Foto_perfil_Tiktok.png"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/semi-senior-full-stack-java-developer-qa-ai-bilingue-23people-santiago"
+   }
+  },
+  {
+   "id": "software-engineer-frontend-capital-express-santiago",
+   "type": "job",
+   "attributes": {
+    "title": "Software Engineer Front-end",
+    "description_headline": "Requerimientos del cargo",
+    "description": "<ul><li>Experiencia sólida desarrollando aplicaciones web con <strong>React y TypeScript</strong>.</li><li>Dominio de HTML y CSS modernos.</li><li>Experiencia en la creación de componentes reutilizables y trabajo con <em>design systems</em>.</li><li>Manejo fluido de gestión de estado, <em>routing</em> y datos asíncronos.</li><li>Experiencia integrando APIs y desarrollando formularios con validación robusta.</li><li>Conocimientos en <em>testing</em> unitario y de componentes, con nociones de pruebas <em>end-to-end</em>.</li><li>Capacidad para trabajar con autonomía, participar en <em>code reviews</em> y comunicar tus decisiones técnicas con claridad.</li><li>2 a 3 años de experiencia laboral.</li></ul>",
+    "projects": "<p>En <strong>Capital Express</strong>, buscamos un/a Software Engineer Frontend para desarrollar aplicaciones web de alta calidad y mejorar la experiencia de los usuarios en nuestra plataforma de financiamiento.</p><p>Somos una fintech chilena especializada en factoring y financiamiento para pymes, cuyo equipo de ingeniería crea las herramientas digitales que sustentan nuestra operación.</p>",
+    "functions_headline": "Funciones del cargo",
+    "functions": "<p>Como parte de nuestro equipo, desarrollarás aplicaciones web utilizando <strong>React y TypeScript</strong>. Tendrás la autonomía necesaria para gestionar funcionalidades de principio a fin, colaborar en decisiones técnicas y asegurar que nuestras interfaces sean accesibles, consistentes y confiables.</p><ul><li>Desarrollar y mantener las aplicaciones web del producto.</li><li>Construir componentes reutilizables integrados a nuestro <em>design system</em>.</li><li>Implementar interfaces orientadas a datos, incluyendo formularios validados y tablas complejas.</li><li>Gestionar el estado de la aplicación e integrar APIs de backend y sistemas de autenticación.</li><li>Escribir pruebas automatizadas y documentar los componentes desarrollados.</li><li>Optimizar la accesibilidad, el diseño <em>responsive</em> y la performance.</li><li>Participar activamente en <em>code reviews</em>, refinamiento de tareas y estimaciones junto al equipo.</li><li>Investigar y resolver problemas de producción relacionados con tus entregas.</li></ul>",
+    "benefits_headline": "Condiciones",
+    "benefits": "<ul><li>Tarde Libre por tu cumpleaños</li><li>Seguro complementario</li><li>3 días de vacaciones adicionales</li><li>Fruta de la temporada</li></ul><p>Entre otros.. </p>",
+    "desirable_headline": "Opcionales",
+    "desirable": "<p><strong>Es deseable</strong> contar con experiencia en accesibilidad web, optimización de performance, protocolos OAuth2/OIDC, y visualización o exportación de datos.</p>",
+    "remote": false,
+    "remote_modality": "no_remote",
+    "remote_zone": null,
+    "countries": [
+     "Chile"
+    ],
+    "lang": "lang_not_specified",
+    "category_name": "Programming",
+    "perks": [
+     "flexible_hours",
+     "remote_partial",
+     "health_coverage",
+     "computer_provided",
+     "informal_dresscode",
+     "vacation_over_legal",
+     "beverages_and_snacks"
+    ],
+    "min_salary": 2000,
+    "max_salary": 2500,
+    "published_at": 1794510207,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 43,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": []
+    },
+    "location_cities": {
+     "data": [
+      {
+       "id": 1,
+       "type": "location_city"
+      }
+     ]
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 3,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 11,
+       "type": "tag"
+      },
+      {
+       "id": 12,
+       "type": "tag"
+      },
+      {
+       "id": 123,
+       "type": "tag"
+      },
+      {
+       "id": 259,
+       "type": "tag"
+      },
+      {
+       "id": 888,
+       "type": "tag"
+      },
+      {
+       "id": 1658,
+       "type": "tag"
+      },
+      {
+       "id": 37059,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "capital-express-cl-2344",
+      "type": "company",
+      "attributes": {
+       "name": "Capital Express",
+       "description": "Empresa de  Servicios Financieros con más de 15 años de experiencia en el rubro del factoring.",
+       "long_description": "",
+       "projects": null,
+       "benefits": "<ul><li>Tarde Libre por tu cumpleaños</li><li>Seguro complementario</li><li>3 días de vacaciones adicionales</li><li>Fruta de la temporada</li></ul><p>Entre otros..&nbsp;<br><br></p>",
+       "web": "http://www.capitalexpress.cl",
+       "twitter": null,
+       "github": null,
+       "facebook": null,
+       "angellist": null,
+       "country": "CL",
+       "response_time_in_days": {
+        "min": 21,
+        "max": 35
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/20401/1111.png"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/software-engineer-frontend-capital-express-santiago"
+   }
+  },
+  {
+   "id": "senior-software-engineer-backend-tech-lead-capital-express-santiago",
+   "type": "job",
+   "attributes": {
+    "title": "Senior Software Engineer Back-end / Tech Lead",
+    "description_headline": "Requerimientos del cargo",
+    "description": "<ul><li>Experiencia senior construyendo y operando sistemas backend en producción.</li><li>Dominio de <strong>Go y/o Node.js</strong>, con disposición para trabajar con ambos lenguajes.</li><li>Capacidad para diseñar servicios, APIs y sistemas integrados mediante eventos o colas.</li><li>Experiencia sólida con bases de datos relacionales y documentales.</li><li>Criterio de seguridad: autenticación, autorización, OAuth2/OIDC, JWT y buenas prácticas de OWASP.</li><li>Experiencia con testing automatizado, CI/CD, contenedores y observabilidad.</li><li>Experiencia comprobable en liderazgo técnico: mentoría, code review y diseño de arquitectura.</li><li>Habilidad para colaborar eficazmente tanto con perfiles técnicos como de negocio.</li><li>Experiencia en el uso de herramientas de IA para el desarrollo, con criterio para delegar tareas y verificar resultados.</li></ul>",
+    "projects": "<p>Diseñarás y desarrollarás servicios backend, liderando técnicamente al equipo junto al CTO. Es un rol <em>hands-on</em>: continuarás programando mientras ayudas a definir la arquitectura, los estándares y las mejores prácticas de ingeniería.</p><p>Trabajarás estrechamente con el Product Owner y el equipo técnico para transformar las necesidades del negocio en soluciones confiables, seguras y escalables.</p>",
+    "functions_headline": "Funciones del cargo",
+    "functions": "<ul><li>Diseñar, desarrollar y mantener servicios backend en <strong>Go y Node.js</strong>.</li><li>Crear APIs REST y contratos entre servicios documentados con OpenAPI.</li><li>Modelar datos en PostgreSQL y MongoDB, optimizando el rendimiento y gestionando migraciones.</li><li>Definir, junto al CTO, la arquitectura y las decisiones de stack tecnológico.</li><li>Establecer estándares de código, testing, seguridad y documentación.</li><li>Participar en code reviews, resolver bloqueos técnicos y mentorizar al equipo.</li><li>Colaborar con el Product Owner en el refinamiento, diseño y estimación de soluciones.</li><li>Documentar decisiones técnicas, gestionar la deuda técnica y asegurar la operatividad en producción.</li><li>Liderar el uso responsable de asistentes y agentes de IA, supervisando resultados y promoviendo buenas prácticas.</li></ul>",
+    "benefits_headline": "Condiciones",
+    "benefits": "<ul><li>Tarde Libre por tu cumpleaños</li><li>Seguro complementario</li><li>3 días de vacaciones adicionales</li><li>Fruta de la temporada</li></ul><p>Entre otros.. </p>",
+    "desirable_headline": "Opcionales",
+    "desirable": "<p><strong>Es deseable</strong> contar con conocimientos en AWS y experiencia previa en productos financieros o entornos regulados.</p>",
+    "remote": false,
+    "remote_modality": "no_remote",
+    "remote_zone": null,
+    "countries": [
+     "Chile"
+    ],
+    "lang": "lang_not_specified",
+    "category_name": "Programming",
+    "perks": [
+     "flexible_hours",
+     "remote_partial",
+     "health_coverage",
+     "computer_provided",
+     "informal_dresscode",
+     "vacation_over_legal",
+     "beverages_and_snacks"
+    ],
+    "min_salary": 2400,
+    "max_salary": 3500,
+    "published_at": 1794508914,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 13,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": []
+    },
+    "location_cities": {
+     "data": [
+      {
+       "id": 1,
+       "type": "location_city"
+      }
+     ]
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 4,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 51,
+       "type": "tag"
+      },
+      {
+       "id": 54,
+       "type": "tag"
+      },
+      {
+       "id": 58,
+       "type": "tag"
+      },
+      {
+       "id": 100,
+       "type": "tag"
+      },
+      {
+       "id": 133,
+       "type": "tag"
+      },
+      {
+       "id": 422,
+       "type": "tag"
+      },
+      {
+       "id": 1694,
+       "type": "tag"
+      },
+      {
+       "id": 36776,
+       "type": "tag"
+      },
+      {
+       "id": 37157,
+       "type": "tag"
+      },
+      {
+       "id": 37770,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "capital-express-cl-2344",
+      "type": "company",
+      "attributes": {
+       "name": "Capital Express",
+       "description": "Empresa de  Servicios Financieros con más de 15 años de experiencia en el rubro del factoring.",
+       "long_description": "",
+       "projects": null,
+       "benefits": "<ul><li>Tarde Libre por tu cumpleaños</li><li>Seguro complementario</li><li>3 días de vacaciones adicionales</li><li>Fruta de la temporada</li></ul><p>Entre otros..&nbsp;<br><br></p>",
+       "web": "http://www.capitalexpress.cl",
+       "twitter": null,
+       "github": null,
+       "facebook": null,
+       "angellist": null,
+       "country": "CL",
+       "response_time_in_days": {
+        "min": 21,
+        "max": 35
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/20401/1111.png"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/senior-software-engineer-backend-tech-lead-capital-express-santiago"
+   }
+  }
+ ],
+ "meta": {
+  "page": 1,
+  "per_page": 50,
+  "total_pages": 1
+ }
+}

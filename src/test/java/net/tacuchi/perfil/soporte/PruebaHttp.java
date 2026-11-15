@@ -6,7 +6,9 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ByteArrayResource;
+import net.tacuchi.perfil.model.Fuente;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -15,7 +17,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 /** Base de las pruebas por HTTP: la API real en un puerto, Access y sitio de prueba, almacén en memoria. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
-@Import(AlmacenDePruebaConfig.class)
+@Import({AlmacenDePruebaConfig.class, RelojDePruebaConfig.class})
 public abstract class PruebaHttp {
 
     public static final String CABECERA_ACCESS = "Cf-Access-Jwt-Assertion";
@@ -23,12 +25,19 @@ public abstract class PruebaHttp {
 
     protected static final AccessDePrueba ACCESS = new AccessDePrueba();
     protected static final SitioDePrueba SITIO = new SitioDePrueba();
+    protected static final FuentesDePrueba FUENTES = new FuentesDePrueba();
 
     @Autowired
     protected RestTestClient cliente;
 
     @Autowired
     protected AlmacenEnMemoria almacen;
+
+    @Autowired
+    protected RelojDePrueba reloj;
+
+    @Autowired
+    protected JdbcClient jdbc;
 
     @DynamicPropertySource
     static void propiedades(DynamicPropertyRegistry registro) {
@@ -43,11 +52,36 @@ public abstract class PruebaHttp {
         registro.add("perfil.almacen.bucket", () -> "sin-uso");
         registro.add("perfil.almacen.acceso", () -> "sin-uso");
         registro.add("perfil.almacen.secreto", () -> "sin-uso");
+        registro.add("spring.datasource.url", BaseDeDatosDePrueba::url);
+        registro.add("spring.datasource.username", BaseDeDatosDePrueba::usuario);
+        registro.add("spring.datasource.password", BaseDeDatosDePrueba::clave);
+        registro.add("perfil.ofertas.getonbrd-url", () -> FUENTES.url(Fuente.GET_ON_BOARD));
+        registro.add("perfil.ofertas.remotive-url", () -> FUENTES.url(Fuente.REMOTIVE));
+        registro.add("perfil.ofertas.remoteok-url", () -> FUENTES.url(Fuente.REMOTE_OK));
+        // Las pruebas disparan la recolección a mano; el aviso se enciende solo donde se prueba.
+        registro.add("perfil.ofertas.cron", () -> "${prueba.cron:-}");
+        registro.add("perfil.aviso.activo", () -> "${prueba.aviso-activo:false}");
     }
 
     @BeforeEach
     void vaciarAlmacen() {
         almacen.vaciar();
+    }
+
+    @BeforeEach
+    void vaciarOfertas() {
+        jdbc.sql("TRUNCATE oferta, fuente, aviso").update();
+        reloj.reiniciar();
+        FUENTES.reiniciar();
+    }
+
+    protected RestTestClient.ResponseSpec patchIdentificado(String ruta, String json) {
+        return cliente.patch().uri(ruta)
+                .header(CABECERA_ACCESS, ACCESS.codigoValido())
+                .header("Origin", ORIGEN_PANEL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(json)
+                .exchange();
     }
 
     protected RestTestClient.ResponseSpec subir(byte[] pdf, byte[] word) {

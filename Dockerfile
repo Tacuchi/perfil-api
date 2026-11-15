@@ -12,7 +12,8 @@ RUN useradd --system --uid 10001 --no-create-home perfil
 WORKDIR /app
 COPY --from=construccion /fuente/app.jar app.jar
 USER 10001
-# Tope de memoria: el servidor es compartido. Coolify aplica además el límite del contenedor.
-ENV JAVA_TOOL_OPTIONS="-Xmx192m -Xss512k -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC"
+# Tope de memoria: el servidor es compartido. Coolify aplica además el límite del contenedor (512 MB).
+# Subió de 192 a 224 MB de heap y de 128 a 160 MB de metaspace con la base de datos, las migraciones y el correo.
+ENV JAVA_TOOL_OPTIONS="-Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:+UseSerialGC"
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

@@ -13,7 +13,7 @@ class AlmacenR2ContratoTest extends ContratoAlmacen {
         PerfilProperties.Almacen datos = new PerfilProperties.Almacen(
                 System.getenv("PERFIL_ALMACEN_ENDPOINT"), System.getenv("PERFIL_ALMACEN_BUCKET"),
                 System.getenv("PERFIL_ALMACEN_ACCESO"), System.getenv("PERFIL_ALMACEN_SECRETO"));
-        PerfilProperties propiedades = new PerfilProperties(null, datos, null, null, null);
+        PerfilProperties propiedades = new PerfilProperties(null, datos, null, null, null, null, null);
         AlmacenConfig config = new AlmacenConfig();
         return config.almacenArchivos(config.s3Client(propiedades), propiedades);
     }
