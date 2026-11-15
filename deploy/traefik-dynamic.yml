@@ -40,6 +40,11 @@ http:
     perfil-redirect-https:
       redirectScheme:
         scheme: https
+    # No deja pasar a nadie: solo acepta el propio servidor.
+    perfil-nadie:
+      ipAllowList:
+        sourceRange:
+          - 127.0.0.1/32
   routers:
     perfil-http:
       entryPoints: [http]
@@ -59,6 +64,17 @@ http:
       priority: 200
       middlewares: [perfil-cloudflare]
       service: perfil-api
+      tls:
+        certResolver: letsencrypt
+    # Access deja abierta la ruta del reto del certificado (aplicación aparte con política «bypass»): sin eso
+    # Let's Encrypt recibe la pantalla de ingreso y no emite. El reto llega por http y lo atiende Traefik;
+    # por https esa ruta no tiene nada que servir, así que se cierra para que no muestre el panel sin ingreso.
+    perfil-reto-cerrado:
+      entryPoints: [https]
+      rule: Host(`perfil.tacuchi.net`) && PathPrefix(`/.well-known/acme-challenge/`)
+      priority: 300
+      middlewares: [perfil-nadie]
+      service: perfil-panel
       tls:
         certResolver: letsencrypt
     # Prioridad alta: gana a la ruta general del sitio, que Coolify crea con Host(`tacuchi.dev`).
