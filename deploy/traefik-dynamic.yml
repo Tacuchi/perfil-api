@@ -1,0 +1,81 @@
+# Rutas de Traefik (file provider) para el panel y la API del perfil en Coolify, detrás de Cloudflare.
+# Se copia al directorio dinámico del proxy (/data/coolify/proxy/dynamic/ en Coolify); Traefik la recarga al guardar.
+# Las apps de Coolify no llevan dominio: estas rutas son la única entrada. Reemplaza <contenedor-panel> y
+# <contenedor-api> por los nombres de contenedor (Coolify: el uuid de la app, con "consistent container name").
+#
+# - perfil.tacuchi.net        → panel (protegido por Cloudflare Access)
+# - perfil.tacuchi.net/api/…  → API   (misma aplicación de Access; la API verifica el código igualmente)
+# - tacuchi.dev/cv            → API   (la única ruta pública; el resto de tacuchi.dev sigue yendo al sitio)
+#
+# La lista de IPs deja pasar solo tráfico que llega por Cloudflare: la IP del servidor es pública.
+http:
+  middlewares:
+    # Rangos de https://www.cloudflare.com/ips-v4 y /ips-v6 (copiados de la receta del relé, revisada el 2026-11-10);
+    # actualízalos cuando Cloudflare lo haga.
+    perfil-cloudflare:
+      ipAllowList:
+        sourceRange:
+          - 173.245.48.0/20
+          - 103.21.244.0/22
+          - 103.22.200.0/22
+          - 103.31.4.0/22
+          - 141.101.64.0/18
+          - 108.162.192.0/18
+          - 190.93.240.0/20
+          - 188.114.96.0/20
+          - 197.234.240.0/22
+          - 198.41.128.0/17
+          - 162.158.0.0/15
+          - 104.16.0.0/13
+          - 104.24.0.0/14
+          - 172.64.0.0/13
+          - 131.0.72.0/22
+          - 2400:cb00::/32
+          - 2606:4700::/32
+          - 2803:f800::/32
+          - 2405:b500::/32
+          - 2405:8100::/32
+          - 2a06:98c0::/29
+          - 2c0f:f248::/32
+    perfil-redirect-https:
+      redirectScheme:
+        scheme: https
+  routers:
+    perfil-http:
+      entryPoints: [http]
+      rule: Host(`perfil.tacuchi.net`)
+      middlewares: [perfil-cloudflare, perfil-redirect-https]
+      service: perfil-panel
+    perfil-panel:
+      entryPoints: [https]
+      rule: Host(`perfil.tacuchi.net`)
+      middlewares: [perfil-cloudflare]
+      service: perfil-panel
+      tls:
+        certResolver: letsencrypt
+    perfil-api:
+      entryPoints: [https]
+      rule: Host(`perfil.tacuchi.net`) && PathPrefix(`/api/`)
+      priority: 200
+      middlewares: [perfil-cloudflare]
+      service: perfil-api
+      tls:
+        certResolver: letsencrypt
+    # Prioridad alta: gana a la ruta general del sitio, que Coolify crea con Host(`tacuchi.dev`).
+    perfil-cv:
+      entryPoints: [https]
+      rule: Host(`tacuchi.dev`) && Path(`/cv`)
+      priority: 1000
+      middlewares: [perfil-cloudflare]
+      service: perfil-api
+      tls:
+        certResolver: letsencrypt
+  services:
+    perfil-panel:
+      loadBalancer:
+        servers:
+          - url: http://<contenedor-panel>:80
+    perfil-api:
+      loadBalancer:
+        servers:
+          - url: http://<contenedor-api>:8080
