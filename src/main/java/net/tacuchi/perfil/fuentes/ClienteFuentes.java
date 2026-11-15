@@ -1,5 +1,6 @@
 package net.tacuchi.perfil.fuentes;
 
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -47,7 +48,8 @@ public class ClienteFuentes {
     public JsonNode json(String url) {
         Respuesta respuesta;
         try {
-            respuesta = cliente.get().uri(url).accept(MediaType.APPLICATION_JSON)
+            // Como URI y no como plantilla: una plantilla volvería a codificar los «%» que la dirección ya trae.
+            respuesta = cliente.get().uri(URI.create(url)).accept(MediaType.APPLICATION_JSON)
                     .exchange((peticion, r) -> new Respuesta(r.getStatusCode().value(),
                             new String(r.getBody().readAllBytes(), StandardCharsets.UTF_8)), false);
         } catch (RestClientException e) {

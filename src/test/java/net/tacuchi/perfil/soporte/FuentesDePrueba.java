@@ -37,7 +37,7 @@ public final class FuentesDePrueba {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        servidor.createContext("/getonbrd/", i -> responder(i, Fuente.GET_ON_BOARD, archivoGetOnBoard(i)));
+        servidor.createContext("/getonbrd/", this::responderGetOnBoard);
         servidor.createContext("/remotive/", i -> responder(i, Fuente.REMOTIVE, "remotive.json"));
         servidor.createContext("/remoteok/", i -> responder(i, Fuente.REMOTE_OK, "remoteok.json"));
         servidor.start();
@@ -100,6 +100,19 @@ public final class FuentesDePrueba {
             return "getonbrd-mobile-developer.json";
         }
         return "getonbrd-vacia.json";
+    }
+
+    /** Como el sitio real: si «expand» no llega como una lista JSON, responde 422. */
+    private void responderGetOnBoard(HttpExchange intercambio) {
+        String consulta = intercambio.getRequestURI().getQuery();
+        if (consulta == null || !consulta.contains("expand=[\"company\"]")) {
+            rutas.add(intercambio.getRequestURI().toString());
+            lecturas.get(Fuente.GET_ON_BOARD).incrementAndGet();
+            AccessDePrueba.escribir(intercambio, 422, "application/json",
+                    "{\"message\":\"expand no es una lista\"}".getBytes(StandardCharsets.UTF_8));
+            return;
+        }
+        responder(intercambio, Fuente.GET_ON_BOARD, archivoGetOnBoard(intercambio));
     }
 
     private void responder(HttpExchange intercambio, Fuente fuente, String archivo) {
