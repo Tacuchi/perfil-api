@@ -44,6 +44,11 @@ class BumeranApifyTest extends PruebaApify {
         assertThat(fin.resultado()).isEqualTo(EstadoLectura.FALLO);
         assertThat(fin.detalle()).contains("no devolvió avisos válidos", "Perú");
         assertThat(fin.costoUsd()).isEqualByComparingTo("0.0015");
+        getIdentificado("/api/fuentes/BUMERAN/historial").expectStatus().isOk().expectBody()
+                .jsonPath("$.lecturas[0].estado").isEqualTo("FALLO")
+                .jsonPath("$.lecturas[0].leidas").isEqualTo(0)
+                .jsonPath("$.lecturas[0].nuevas").isEqualTo(0)
+                .jsonPath("$.lecturas[0].costoUsd").isEqualTo(0.0015);
     }
 
     @Test void pausarYReanudar_noLeeSinSolicitudExplicita() {

@@ -60,6 +60,10 @@ class LinkedinApifyTest extends PruebaApify {
         assertThat(fin.ofertasLeidas()).isEqualTo(2);
         assertThat(fin.detalle()).contains("Remoto para Latinoamérica", "desarrollador de software");
         assertThat(fuente(FUENTE).detalle()).isEqualTo(fin.detalle());
+        getIdentificado("/api/fuentes/LINKEDIN/historial").expectStatus().isOk().expectBody()
+                .jsonPath("$.lecturas[0].parcial").isEqualTo(true)
+                .jsonPath("$.lecturas[0].motivo").isEqualTo(fin.detalle())
+                .jsonPath("$.lecturas[0].costoUsd").isEqualTo(fin.costoUsd().doubleValue());
         assertThat(fin.costoUsd()).isGreaterThanOrEqualTo(new BigDecimal("0.0054"));
         if (modo == ApifyDePrueba.Modo.FALLA || modo == ApifyDePrueba.Modo.VACIA) {
             assertThat(fin.costoUsd()).isEqualByComparingTo("0.0084");
@@ -138,6 +142,8 @@ class LinkedinApifyTest extends PruebaApify {
         var fin = leerADemanda(null);
         assertThat(fin.fuentes()).hasSize(5);
         assertThat(APIFY.lanzamientos(ACTOR)).isZero();
+        getIdentificado("/api/fuentes/LINKEDIN/historial").expectStatus().isOk().expectBody()
+                .jsonPath("$.lecturas").isEmpty();
         assertThat(APIFY.lanzamientos(ApifyDePrueba.BUMERAN)).isEqualTo(3);
         assertThat(APIFY.lanzamientos(ApifyDePrueba.ACTOR)).isEqualTo(1);
         assertThat(fin.omitidas()).singleElement().satisfies(x -> {

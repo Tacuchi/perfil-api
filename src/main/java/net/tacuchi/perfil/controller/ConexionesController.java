@@ -1,5 +1,7 @@
 package net.tacuchi.perfil.controller;
 
+import net.tacuchi.perfil.dto.HistorialLecturasResponse;
+import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,12 @@ public class ConexionesController {
     @GetMapping
     public List<FuenteResponse> listar() {
         return conexionesService.listar();
+    }
+
+    @GetMapping("/{fuente}/historial")
+    public HistorialLecturasResponse historial(@PathVariable Fuente fuente,
+            @RequestParam(required = false) Long antesDe) {
+        return conexionesService.historial(fuente, antesDe);
     }
 
     @PostMapping("/{fuente}/pausar")

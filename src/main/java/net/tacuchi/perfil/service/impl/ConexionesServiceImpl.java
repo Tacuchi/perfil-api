@@ -1,5 +1,7 @@
 package net.tacuchi.perfil.service.impl;
 
+import net.tacuchi.perfil.dto.HistorialLecturasResponse;
+import net.tacuchi.perfil.repository.HistorialLecturasRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -37,6 +39,7 @@ public class ConexionesServiceImpl implements ConexionesService {
     private final ConexionesPago conexionesPago;
     private final CifradoClaves cifrado;
     private final Clock clock;
+    private final HistorialLecturasRepository historial;
     private final net.tacuchi.perfil.service.ClaveApify claveApify;
 
     @Override
@@ -53,6 +56,12 @@ public class ConexionesServiceImpl implements ConexionesService {
                         fuente.dePago() ? claveApify.proyectar(conexiones.get(fuente)) : conexiones.get(fuente), hoy, llave,
                         fuente.dePago() ? conexionesPago.consumoDelMes(fuente) : BigDecimal.ZERO))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public HistorialLecturasResponse historial(Fuente fuente, Long antesDe) {
+        return historial.listar(fuente, antesDe);
     }
 
     @Override

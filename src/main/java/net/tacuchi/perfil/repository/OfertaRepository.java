@@ -90,6 +90,11 @@ public class OfertaRepository {
                 .update();
     }
 
+    public int nuevasDesde(Fuente fuente, Instant inicio) {
+        return jdbc.sql("SELECT count(*) FROM oferta WHERE fuente = :fuente AND vista_primera = :inicio")
+                .param("fuente", fuente.name()).param("inicio", Timestamp.from(inicio)).query(Integer.class).single();
+    }
+
     public List<OfertaGuardada> listar(FiltroOfertas filtro) {
         StringBuilder sql = new StringBuilder("SELECT " + COLUMNAS + " FROM oferta WHERE TRUE");
         Map<String, Object> parametros = new HashMap<>();

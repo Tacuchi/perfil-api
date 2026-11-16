@@ -1,5 +1,6 @@
 package net.tacuchi.perfil.service;
 
+import net.tacuchi.perfil.dto.HistorialLecturasResponse;
 import java.math.BigDecimal;
 import java.util.List;
 import net.tacuchi.perfil.dto.FuenteResponse;
@@ -10,6 +11,8 @@ public interface ConexionesService {
 
     /** Una por cada fuente conocida, en el orden del catálogo. */
     List<FuenteResponse> listar();
+
+    HistorialLecturasResponse historial(Fuente fuente, Long antesDe);
 
     /** Pausa la conexión: ninguna recolección la lee hasta reanudarla. */
     FuenteResponse pausar(Fuente fuente);

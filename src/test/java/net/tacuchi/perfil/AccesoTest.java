@@ -33,6 +33,7 @@ class AccesoTest extends PruebaHttp {
                 Arguments.of(HttpMethod.GET, "/api/ofertas/1"),
                 Arguments.of(HttpMethod.PATCH, "/api/ofertas/1"),
                 Arguments.of(HttpMethod.GET, "/api/fuentes"),
+                Arguments.of(HttpMethod.GET, "/api/fuentes/REMOTIVE/historial"),
                 Arguments.of(HttpMethod.GET, "/api/tecnologias"),
                 Arguments.of(HttpMethod.GET, "/api/recoleccion"),
                 Arguments.of(HttpMethod.POST, "/api/recoleccion"),

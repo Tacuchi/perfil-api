@@ -1,5 +1,7 @@
 package net.tacuchi.perfil.service.impl;
 
+import net.tacuchi.perfil.repository.HistorialLecturasRepository;
+import java.time.Duration;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -58,12 +60,14 @@ public class RecoleccionServiceImpl implements RecoleccionService {
     private final TaskExecutor ejecutor;
     private final CandadoRecoleccion candado;
     private final Clock clock;
+    private final HistorialLecturasRepository historial;
 
     public RecoleccionServiceImpl(List<FuenteOfertas> fuentes, RegistroOfertas registro,
             FuenteRepository fuenteRepository, LecturaDiaRepository lecturaDiaRepository,
             ConexionRepository conexionRepository, ConexionesPago conexionesPago, OfertaRepository ofertaRepository,
             AvisoService avisoService,
-            @Qualifier("applicationTaskExecutor") TaskExecutor ejecutor, CandadoRecoleccion candado, Clock clock) {
+            @Qualifier("applicationTaskExecutor") TaskExecutor ejecutor, CandadoRecoleccion candado, Clock clock,
+            HistorialLecturasRepository historial) {
         this.fuentes = fuentes.stream().sorted(Comparator.comparing(FuenteOfertas::fuente)).toList();
         this.registro = registro;
         this.fuenteRepository = fuenteRepository;
@@ -75,6 +79,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         this.ejecutor = ejecutor;
         this.candado = candado;
         this.clock = clock;
+        this.historial = historial;
     }
 
     @Scheduled(cron = "${perfil.ofertas.cron}", zone = "America/Lima")
@@ -210,22 +215,38 @@ public class RecoleccionServiceImpl implements RecoleccionService {
     }
 
     private Resultado leer(FuenteOfertas fuente, Instant inicio) {
+        Instant comienzo = clock.instant();
+        Resultado resultado = procesar(fuente, inicio);
+        // El historial es independiente: un fallo de escritura no cambia la última lectura ni corta las demás.
+        try {
+            historial.registrar(fuente.fuente(), comienzo,
+                    Math.max(0, Duration.between(comienzo, clock.instant()).toMillis()),
+                    resultado.estado(), resultado.ofertas(), resultado.nuevas(), resultado.costoUsd(), resultado.detalle());
+        } catch (RuntimeException e) {
+            log.error("[OFERTAS] {}: no se pudo guardar el historial", fuente.fuente().nombre(), e);
+        }
+        return resultado;
+    }
+
+    private Resultado procesar(FuenteOfertas fuente, Instant inicio) {
         try {
             FuenteOfertas.Lectura lectura = fuente.leer();
+            int previas = ofertaRepository.nuevasDesde(fuente.fuente(), inicio);
             registro.registrar(fuente.fuente(), lectura, inicio);
+            int nuevas = ofertaRepository.nuevasDesde(fuente.fuente(), inicio) - previas;
             int leidas = lectura.ofertas().size();
             fuenteRepository.registrar(fuente.fuente(), EstadoLectura.CORRECTA, lectura.detalle(), inicio, leidas);
             log.info("[OFERTAS] {}: {} ofertas leídas", fuente.fuente().nombre(), leidas);
-            return new Resultado(EstadoLectura.CORRECTA, leidas, lectura.costoUsd(), lectura.detalle());
+            return new Resultado(EstadoLectura.CORRECTA, leidas, nuevas, lectura.costoUsd(), lectura.detalle());
         } catch (LecturaFallidaException e) {
             fuenteRepository.registrar(fuente.fuente(), e.getEstado(), e.getMessage(), inicio, 0);
             log.warn("[OFERTAS] {}: {} — {}", fuente.fuente().nombre(), e.getEstado(), e.getMessage());
-            return new Resultado(e.getEstado(), 0, e.getCostoUsd(), e.getMessage());
+            return new Resultado(e.getEstado(), 0, 0, e.getCostoUsd(), e.getMessage());
         } catch (RuntimeException e) {
             fuenteRepository.registrar(fuente.fuente(), EstadoLectura.FALLO, "no se pudo procesar la respuesta",
                     inicio, 0);
             log.error("[OFERTAS] {}: fallo al procesar la lectura", fuente.fuente().nombre(), e);
-            return new Resultado(EstadoLectura.FALLO, 0, null, "no se pudo procesar la respuesta");
+            return new Resultado(EstadoLectura.FALLO, 0, 0, null, "no se pudo procesar la respuesta");
         }
     }
 
@@ -255,6 +276,6 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         return lectores.stream().map(FuenteOfertas::fuente).toList();
     }
 
-    private record Resultado(EstadoLectura estado, int ofertas, java.math.BigDecimal costoUsd, String detalle) {
+    private record Resultado(EstadoLectura estado, int ofertas, int nuevas, java.math.BigDecimal costoUsd, String detalle) {
     }
 }
