@@ -26,10 +26,10 @@ public record RecoleccionResponse(
             new RecoleccionResponse(EstadoRecoleccion.NINGUNA, null, null, null, 0, 0, List.of(), List.of());
 
     public static RecoleccionResponse iniciada(OrigenRecoleccion origen, Instant inicio, List<Fuente> lanzadas,
-            List<Fuente> omitidasPorTope) {
+            List<FuenteOmitida> omitidas) {
         return new RecoleccionResponse(EstadoRecoleccion.EN_CURSO, origen, inicio, null, 0, lanzadas.size(),
                 lanzadas.stream().map(FuenteEnRecoleccion::pendiente).toList(),
-                omitidasPorTope.stream().map(FuenteOmitida::porTope).toList());
+                List.copyOf(omitidas));
     }
 
     public RecoleccionResponse conFuente(Fuente fuente, UnaryOperator<FuenteEnRecoleccion> cambio) {

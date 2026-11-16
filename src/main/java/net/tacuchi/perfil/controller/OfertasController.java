@@ -5,7 +5,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import net.tacuchi.perfil.dto.CambioEstadoRequest;
 import net.tacuchi.perfil.dto.ConsultaOfertas;
-import net.tacuchi.perfil.dto.FuenteResponse;
 import net.tacuchi.perfil.dto.OfertaDetalleResponse;
 import net.tacuchi.perfil.dto.OfertaResponse;
 import net.tacuchi.perfil.dto.TecnologiasResponse;
@@ -39,11 +38,6 @@ public class OfertasController {
     @PatchMapping("/ofertas/{id}")
     public OfertaDetalleResponse cambiarEstado(@PathVariable long id, @Valid @RequestBody CambioEstadoRequest peticion) {
         return ofertasService.cambiarEstado(id, peticion.estado());
-    }
-
-    @GetMapping("/fuentes")
-    public List<FuenteResponse> fuentes() {
-        return ofertasService.fuentes();
     }
 
     @GetMapping("/tecnologias")

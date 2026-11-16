@@ -6,9 +6,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import lombok.extern.slf4j.Slf4j;
 import net.tacuchi.perfil.dto.FuenteEnRecoleccion;
+import net.tacuchi.perfil.dto.FuenteOmitida;
 import net.tacuchi.perfil.dto.RecoleccionResponse;
 import net.tacuchi.perfil.exception.RecoleccionRechazadaException;
 import net.tacuchi.perfil.fuentes.FuenteOfertas;
@@ -16,9 +18,11 @@ import net.tacuchi.perfil.fuentes.LecturaFallidaException;
 import net.tacuchi.perfil.model.EstadoLectura;
 import net.tacuchi.perfil.model.EstadoRecoleccion;
 import net.tacuchi.perfil.model.Fuente;
+import net.tacuchi.perfil.model.MotivoOmision;
 import net.tacuchi.perfil.model.OrigenRecoleccion;
 import net.tacuchi.perfil.model.PasoFuente;
 import net.tacuchi.perfil.model.Reglas;
+import net.tacuchi.perfil.repository.ConexionRepository;
 import net.tacuchi.perfil.repository.FuenteRepository;
 import net.tacuchi.perfil.repository.LecturaDiaRepository;
 import net.tacuchi.perfil.repository.OfertaRepository;
@@ -32,7 +36,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Cada lectura se cuenta por fuente y día de Lima antes de pedirla al sitio: ni un reinicio ni un fallo dejan
- * pasar el tope. Un fallo deja lo ya recogido y no prueba otra vía.
+ * pasar el tope. Un fallo deja lo ya recogido y no prueba otra vía. Una conexión pausada no se lee ni se cuenta.
  *
  * <p>Una sola recolección a la vez, programada o a demanda. El candado se toma en el hilo que la pide (para
  * responder al instante si se acepta) y lo suelta el hilo que lee; por eso es una bandera guardada por un monitor y
@@ -47,6 +51,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
     private final RegistroOfertas registro;
     private final FuenteRepository fuenteRepository;
     private final LecturaDiaRepository lecturaDiaRepository;
+    private final ConexionRepository conexionRepository;
     private final OfertaRepository ofertaRepository;
     private final AvisoService avisoService;
     private final TaskExecutor ejecutor;
@@ -60,12 +65,13 @@ public class RecoleccionServiceImpl implements RecoleccionService {
 
     public RecoleccionServiceImpl(List<FuenteOfertas> fuentes, RegistroOfertas registro,
             FuenteRepository fuenteRepository, LecturaDiaRepository lecturaDiaRepository,
-            OfertaRepository ofertaRepository, AvisoService avisoService,
+            ConexionRepository conexionRepository, OfertaRepository ofertaRepository, AvisoService avisoService,
             @Qualifier("applicationTaskExecutor") TaskExecutor ejecutor, Clock clock) {
         this.fuentes = fuentes.stream().sorted(Comparator.comparing(FuenteOfertas::fuente)).toList();
         this.registro = registro;
         this.fuenteRepository = fuenteRepository;
         this.lecturaDiaRepository = lecturaDiaRepository;
+        this.conexionRepository = conexionRepository;
         this.ofertaRepository = ofertaRepository;
         this.avisoService = avisoService;
         this.ejecutor = ejecutor;
@@ -94,18 +100,31 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         correr(lanzadas, inicio);
     }
 
-    /** Reserva la lectura del día de cada fuente que hoy no tiene ninguna y muestra el avance si hay algo que leer. */
+    /**
+     * Reserva la lectura del día de cada fuente activa que hoy no tiene ninguna y muestra el avance si hay algo que
+     * leer, con las pausadas como omitidas.
+     */
     private List<FuenteOfertas> reservarProgramada(Instant inicio) {
         LocalDate hoy = LocalDate.ofInstant(inicio, Reglas.ZONA_PERSONA);
-        List<FuenteOfertas> lanzadas = fuentes.stream()
-                .filter(f -> lecturaDiaRepository.reservar(f.fuente(), hoy, Reglas.LECTURAS_PROGRAMADAS_DIA))
-                .toList();
+        Set<Fuente> pausadas = conexionRepository.pausadas();
+        List<FuenteOmitida> omitidas = new ArrayList<>();
+        List<FuenteOfertas> lanzadas = new ArrayList<>();
+        for (FuenteOfertas fuente : fuentes) {
+            if (pausadas.contains(fuente.fuente())) {
+                omitidas.add(FuenteOmitida.de(fuente.fuente(), MotivoOmision.PAUSADA));
+            } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, Reglas.LECTURAS_PROGRAMADAS_DIA)) {
+                lanzadas.add(fuente);
+            }
+        }
         if (!lanzadas.isEmpty()) {
             // Una programada sin nada que leer no reemplaza el último resultado.
             cambiarAvance(a -> RecoleccionResponse.iniciada(OrigenRecoleccion.PROGRAMADA, inicio,
-                    fuentesDe(lanzadas), List.of()));
+                    fuentesDe(lanzadas), omitidas));
+            if (!omitidas.isEmpty()) {
+                log.info("[OFERTAS] la programada omite {} conexiones pausadas", omitidas.size());
+            }
         }
-        return lanzadas;
+        return List.copyOf(lanzadas);
     }
 
     @Override
@@ -133,25 +152,26 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         try {
             Instant inicio = clock.instant();
             LocalDate hoy = LocalDate.ofInstant(inicio, Reglas.ZONA_PERSONA);
+            Set<Fuente> pausadas = conexionRepository.pausadas();
             List<FuenteOfertas> lanzadas = new ArrayList<>();
-            List<Fuente> omitidas = new ArrayList<>();
+            List<FuenteOmitida> omitidas = new ArrayList<>();
             for (FuenteOfertas fuente : pedidas) {
-                if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, Reglas.TOPE_LECTURAS_DIA)) {
+                if (pausadas.contains(fuente.fuente())) {
+                    omitidas.add(FuenteOmitida.de(fuente.fuente(), MotivoOmision.PAUSADA));
+                } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, Reglas.TOPE_LECTURAS_DIA)) {
                     lanzadas.add(fuente);
                 } else {
-                    omitidas.add(fuente.fuente());
+                    omitidas.add(FuenteOmitida.de(fuente.fuente(), MotivoOmision.TOPE_DIARIO));
                 }
             }
             if (lanzadas.isEmpty()) {
-                throw general
-                        ? RecoleccionRechazadaException.sinFuentes(Reglas.TOPE_LECTURAS_DIA)
-                        : RecoleccionRechazadaException.topeDiario(pedidas.getFirst().fuente().nombre(),
-                                Reglas.TOPE_LECTURAS_DIA);
+                throw general ? RecoleccionRechazadaException.sinFuentes(omitidas, Reglas.TOPE_LECTURAS_DIA)
+                        : RecoleccionRechazadaException.omitida(omitidas.getFirst(), Reglas.TOPE_LECTURAS_DIA);
             }
             RecoleccionResponse respuesta = cambiarAvance(a -> RecoleccionResponse.iniciada(
                     OrigenRecoleccion.DEMANDA, inicio, fuentesDe(lanzadas), omitidas));
             iniciada = true;
-            log.info("[OFERTAS] recolección a demanda lanzada: {} fuentes, {} omitidas por tope",
+            log.info("[OFERTAS] recolección a demanda lanzada: {} fuentes, {} omitidas",
                     lanzadas.size(), omitidas.size());
             ejecutor.execute(() -> correr(List.copyOf(lanzadas), inicio));
             return respuesta;

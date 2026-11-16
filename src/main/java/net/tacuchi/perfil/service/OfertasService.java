@@ -2,7 +2,6 @@ package net.tacuchi.perfil.service;
 
 import java.util.List;
 import net.tacuchi.perfil.dto.ConsultaOfertas;
-import net.tacuchi.perfil.dto.FuenteResponse;
 import net.tacuchi.perfil.dto.OfertaDetalleResponse;
 import net.tacuchi.perfil.dto.OfertaResponse;
 import net.tacuchi.perfil.dto.TecnologiasResponse;
@@ -15,8 +14,6 @@ public interface OfertasService {
     OfertaDetalleResponse detalle(long id);
 
     OfertaDetalleResponse cambiarEstado(long id, EstadoOferta estado);
-
-    List<FuenteResponse> fuentes();
 
     TecnologiasResponse tecnologias();
 }

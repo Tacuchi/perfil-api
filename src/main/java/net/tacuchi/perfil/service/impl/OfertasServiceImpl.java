@@ -3,34 +3,26 @@ package net.tacuchi.perfil.service.impl;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import net.tacuchi.perfil.clasificacion.CatalogoTecnologias;
 import net.tacuchi.perfil.dto.ConsultaOfertas;
-import net.tacuchi.perfil.dto.FuenteResponse;
 import net.tacuchi.perfil.dto.OfertaDetalleResponse;
 import net.tacuchi.perfil.dto.OfertaResponse;
 import net.tacuchi.perfil.dto.RepetidaResponse;
 import net.tacuchi.perfil.dto.TecnologiasResponse;
 import net.tacuchi.perfil.exception.EstadoNoPermitidoException;
 import net.tacuchi.perfil.exception.OfertaNoEncontradaException;
-import net.tacuchi.perfil.model.EstadoLectura;
 import net.tacuchi.perfil.model.Encaje;
 import net.tacuchi.perfil.model.EstadoOferta;
 import net.tacuchi.perfil.model.FiltroOfertas;
-import net.tacuchi.perfil.model.Fuente;
-import net.tacuchi.perfil.model.LecturaFuente;
 import net.tacuchi.perfil.model.OfertaGuardada;
 import net.tacuchi.perfil.model.Repetida;
 import net.tacuchi.perfil.model.Reglas;
-import net.tacuchi.perfil.repository.FuenteRepository;
-import net.tacuchi.perfil.repository.LecturaDiaRepository;
 import net.tacuchi.perfil.repository.OfertaRepository;
 import net.tacuchi.perfil.service.OfertasService;
 import org.springframework.stereotype.Service;
@@ -44,8 +36,6 @@ public class OfertasServiceImpl implements OfertasService {
     static final Set<EstadoOferta> ESTADOS_POR_DEFECTO = EnumSet.of(EstadoOferta.NUEVA);
 
     private final OfertaRepository ofertaRepository;
-    private final FuenteRepository fuenteRepository;
-    private final LecturaDiaRepository lecturaDiaRepository;
     private final CatalogoTecnologias catalogo;
     private final Clock clock;
 
@@ -79,24 +69,6 @@ public class OfertasServiceImpl implements OfertasService {
             throw new OfertaNoEncontradaException(id);
         }
         return detalle(id);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FuenteResponse> fuentes() {
-        Map<Fuente, LecturaFuente> lecturas = fuenteRepository.todas().stream()
-                .collect(Collectors.toMap(LecturaFuente::fuente, Function.identity()));
-        Map<Fuente, Integer> deHoy = lecturaDiaRepository.delDia(LocalDate.ofInstant(clock.instant(), Reglas.ZONA_PERSONA));
-        return Arrays.stream(Fuente.values()).map(fuente -> {
-            LecturaFuente lectura = lecturas.get(fuente);
-            int restantes = Math.max(0, Reglas.TOPE_LECTURAS_DIA - deHoy.getOrDefault(fuente, 0));
-            if (lectura == null) {
-                return new FuenteResponse(fuente, fuente.nombre(), EstadoLectura.SIN_LEER, null, null, null, 0,
-                        restantes);
-            }
-            return new FuenteResponse(fuente, fuente.nombre(), lectura.estado(), lectura.detalle(),
-                    lectura.ultimaLectura(), lectura.ultimaCorrecta(), lectura.ofertasLeidas(), restantes);
-        }).toList();
     }
 
     @Override

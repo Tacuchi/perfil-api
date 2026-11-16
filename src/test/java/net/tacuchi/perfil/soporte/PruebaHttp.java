@@ -70,7 +70,7 @@ public abstract class PruebaHttp {
 
     @BeforeEach
     void vaciarOfertas() {
-        jdbc.sql("TRUNCATE oferta, fuente, aviso, lectura_dia").update();
+        jdbc.sql("TRUNCATE oferta, fuente, aviso, lectura_dia, conexion, consumo_mes").update();
         reloj.reiniciar();
         FUENTES.reiniciar();
         FUENTES.usarReloj(reloj);
