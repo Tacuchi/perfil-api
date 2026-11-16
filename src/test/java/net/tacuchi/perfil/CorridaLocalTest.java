@@ -38,6 +38,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.WriterAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -136,6 +137,12 @@ class CorridaLocalTest extends PruebaOfertas {
 
     private void reanudar(Fuente fuente) {
         postIdentificado("/api/fuentes/" + fuente.name() + "/reanudar").expectStatus().isOk();
+    }
+
+    /** Estas pruebas son de LinkedIn: Bumeran, la otra conexión de la máquina, queda pausada y fuera de sus corridas. */
+    @BeforeEach
+    void soloLinkedIn() {
+        postIdentificado("/api/fuentes/" + Fuente.BUMERAN.name() + "/pausar").expectStatus().isOk();
     }
 
     @Test
@@ -326,7 +333,7 @@ class CorridaLocalTest extends PruebaOfertas {
         lector("/fuentes/LINKEDIN/empezar", codigo(codigo), ACCESS.codigoDelLector())
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT).expectBody().jsonPath("$.motivo").isEqualTo("PAUSADA");
 
-        assertThat(avance().omitidas()).singleElement().satisfies(o -> {
+        assertThat(avance().omitidas()).filteredOn(o -> o.fuente() != Fuente.BUMERAN).singleElement().satisfies(o -> {
             assertThat(o.fuente()).isEqualTo(Fuente.LINKEDIN);
             assertThat(o.motivo()).isEqualTo(MotivoOmision.PAUSADA);
         });

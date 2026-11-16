@@ -20,6 +20,11 @@ public final class EntregasDePrueba {
 
     /** {@code cuantos} avisos distintos; el prefijo distingue los de una entrega de los de otra. */
     public static List<OfertaEntregada> avisos(String prefijo, int cuantos, Instant publicadaEn) {
+        return avisos(prefijo, cuantos, publicadaEn, "https://www.linkedin.com/jobs/view/");
+    }
+
+    /** Lo mismo, con los enlaces bajo {@code baseUrl}: el aviso original de otro sitio. */
+    public static List<OfertaEntregada> avisos(String prefijo, int cuantos, Instant publicadaEn, String baseUrl) {
         return IntStream.rangeClosed(1, cuantos)
                 .mapToObj(n -> new OfertaEntregada(
                         prefijo + "-" + n,
@@ -32,7 +37,7 @@ public final class EntregasDePrueba {
                         Boolean.TRUE,
                         "es",
                         "Buscamos a alguien con Java, Spring Boot, Angular y SQL para el equipo de producto.",
-                        "https://www.linkedin.com/jobs/view/" + prefijo + "-" + n))
+                        baseUrl + prefijo + "-" + n))
                 .toList();
     }
 }
