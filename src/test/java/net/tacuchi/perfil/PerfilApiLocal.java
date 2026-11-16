@@ -11,8 +11,10 @@ import java.util.List;
 import net.tacuchi.perfil.local.ArranqueLocalConfig;
 import net.tacuchi.perfil.model.Fuente;
 import net.tacuchi.perfil.soporte.AccessDePrueba;
+import net.tacuchi.perfil.soporte.ApifyDePrueba;
 import net.tacuchi.perfil.soporte.BaseDeDatosDePrueba;
 import net.tacuchi.perfil.soporte.FuentesDePrueba;
+import net.tacuchi.perfil.soporte.PruebaHttp;
 import net.tacuchi.perfil.soporte.SitioDePrueba;
 import org.springframework.boot.SpringApplication;
 
@@ -21,7 +23,8 @@ import org.springframework.boot.SpringApplication;
  * La identidad pasa por la misma verificación que en producción, con claves de prueba publicadas en local;
  * el código firmado queda en target/codigo-local.jwt para que el proxy del panel lo envíe, y el del token de servicio
  * del lector en target/codigo-lector-local.jwt.
- * Las ofertas van a un PostgreSQL de pruebas, las tres fuentes se sirven desde sus respuestas guardadas y el
+ * Las ofertas van a un PostgreSQL de pruebas, las tres fuentes se sirven desde sus respuestas guardadas, Computrabajo
+ * se lee contra el doble de Apify (con la clave {@code clave-de-prueba}) y el
  * correo diario llega a un servidor de correo de prueba. Los mandos del recorrido viven en /api/local.
  * Solo existe en el classpath de pruebas: nada de esto entra al jar.
  */
@@ -39,6 +42,7 @@ public final class PerfilApiLocal {
         AccessDePrueba access = new AccessDePrueba();
         SitioDePrueba sitio = new SitioDePrueba();
         FuentesDePrueba fuentes = new FuentesDePrueba();
+        ApifyDePrueba apify = new ApifyDePrueba();
         GreenMail correo = new GreenMail(ServerSetupTest.SMTP.dynamicPort());
         correo.start();
         Files.createDirectories(ARCHIVO_CODIGO.getParent());
@@ -65,6 +69,9 @@ public final class PerfilApiLocal {
                 // La recolección se dispara con los mandos de /api/local, no por horario.
                 "--perfil.ofertas.cron=-",
                 "--perfil.lector.token-id=" + AccessDePrueba.TOKEN_LECTOR,
+                // Computrabajo contra el doble de Apify: su clave es ApifyDePrueba.CLAVE; la llave, una inventada.
+                "--perfil.computrabajo.url=" + apify.url(),
+                "--perfil.claves.llave=" + PruebaHttp.LLAVE_DE_PRUEBA,
                 "--perfil.aviso.activo=true",
                 "--perfil.aviso.remitente=avisos@ejemplo.test",
                 "--spring.mail.host=127.0.0.1",

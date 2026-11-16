@@ -15,7 +15,6 @@ import net.tacuchi.perfil.dto.OfertaResponse;
 import net.tacuchi.perfil.fuentes.FuenteOfertas;
 import net.tacuchi.perfil.model.Fuente;
 import net.tacuchi.perfil.model.OfertaRecogida;
-import net.tacuchi.perfil.model.MotivoOmision;
 import net.tacuchi.perfil.model.Reglas;
 import net.tacuchi.perfil.model.Via;
 import net.tacuchi.perfil.service.CorridaLocalService;
@@ -86,9 +85,12 @@ public abstract class PruebaOfertas extends PruebaHttp {
         return fuentes().stream().filter(f -> f.via() == Via.SERVIDOR).toList();
     }
 
-    /** Omitidas por pausa o tope; sin las de la máquina, que toda recolección del servidor omite. */
+    /**
+     * Omitidas entre las que lee el servidor, por pausa o tope; sin las de la máquina ni las de pago, que tienen sus
+     * propias pruebas.
+     */
     protected static List<FuenteOmitida> omitidasDelServidor(RecoleccionResponse avance) {
-        return avance.omitidas().stream().filter(o -> o.motivo() != MotivoOmision.DESDE_MAQUINA).toList();
+        return avance.omitidas().stream().filter(o -> o.fuente().via() == Via.SERVIDOR).toList();
     }
 
     protected FuenteResponse fuente(Fuente fuente) {

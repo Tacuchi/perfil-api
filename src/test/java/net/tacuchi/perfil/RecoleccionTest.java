@@ -9,6 +9,7 @@ import net.tacuchi.perfil.dto.FuenteResponse;
 import net.tacuchi.perfil.dto.OfertaResponse;
 import net.tacuchi.perfil.model.EstadoLectura;
 import net.tacuchi.perfil.model.Fuente;
+import net.tacuchi.perfil.model.Via;
 import net.tacuchi.perfil.soporte.FuentesDePrueba;
 import net.tacuchi.perfil.soporte.PruebaOfertas;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ class RecoleccionTest extends PruebaOfertas {
         recoleccion.recoger();
 
         for (Fuente fuente : Fuente.values()) {
-            if (fuente.desdeMaquina()) {
+            if (fuente.via() != Via.SERVIDOR) {
                 continue;
             }
             List<OfertaResponse> ofertas = lista("?encaje=ALTO,MEDIO,NO_ENCAJA&fuente=" + fuente.name());

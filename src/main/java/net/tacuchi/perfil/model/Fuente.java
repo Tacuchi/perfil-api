@@ -9,7 +9,8 @@ public enum Fuente {
     REMOTIVE("Remotive", Via.SERVIDOR, Requisito.NADA, Reglas.TOPE_LECTURAS_DIA),
     REMOTE_OK("Remote OK", Via.SERVIDOR, Requisito.NADA, Reglas.TOPE_LECTURAS_DIA),
     LINKEDIN("LinkedIn", Via.MAQUINA, Requisito.SESION, 1),
-    BUMERAN("Bumeran", Via.MAQUINA, Requisito.NADA, Reglas.TOPE_LECTURAS_DIA);
+    BUMERAN("Bumeran", Via.MAQUINA, Requisito.NADA, Reglas.TOPE_LECTURAS_DIA),
+    COMPUTRABAJO("Computrabajo", Via.PAGO, Requisito.CLAVE, Reglas.SIN_TOPE_DIARIO);
 
     private final String nombre;
     private final Via via;
@@ -35,9 +36,18 @@ public enum Fuente {
         return necesita;
     }
 
-    /** Lecturas que admite en un día de Lima, terminen bien o no. */
+    /** Lecturas que admite en un día de Lima, terminen bien o no; {@link Reglas#SIN_TOPE_DIARIO} si no tiene tope. */
     public int lecturasDia() {
         return lecturasDia;
+    }
+
+    /** Las de pago no tienen tope diario: las acota su tope mensual de gasto. */
+    public boolean conTopeDiario() {
+        return lecturasDia != Reglas.SIN_TOPE_DIARIO;
+    }
+
+    public boolean dePago() {
+        return via == Via.PAGO;
     }
 
     public boolean desdeMaquina() {

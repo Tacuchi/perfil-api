@@ -16,6 +16,8 @@ public final class Reglas {
     public static final ZoneId ZONA_PERSONA = ZoneId.of("America/Lima");
     /** Lecturas que puede recibir una fuente en un día de Lima, programadas y a demanda, terminen bien o no. */
     public static final int TOPE_LECTURAS_DIA = 3;
+    /** Una fuente sin tope de lecturas por día. */
+    public static final int SIN_TOPE_DIARIO = 0;
     /** La recolección programada lee una vez al día cada fuente que ese día aún no tiene lecturas. */
     public static final int LECTURAS_PROGRAMADAS_DIA = 1;
     /** Avisos que admite cada entrega del lector de la máquina: llega cortada, nunca es una lectura completa. */

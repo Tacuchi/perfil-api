@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import net.tacuchi.perfil.dto.FuenteEnRecoleccion;
@@ -26,6 +27,7 @@ import net.tacuchi.perfil.repository.LecturaDiaRepository;
 import net.tacuchi.perfil.repository.OfertaRepository;
 import net.tacuchi.perfil.service.AvisoService;
 import net.tacuchi.perfil.service.CandadoRecoleccion;
+import net.tacuchi.perfil.service.ConexionesPago;
 import net.tacuchi.perfil.service.RecoleccionService;
 import net.tacuchi.perfil.service.RegistroOfertas;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,7 +38,8 @@ import org.springframework.stereotype.Service;
 /**
  * Cada lectura se cuenta por fuente y día de Lima antes de pedirla al sitio: ni un reinicio ni un fallo dejan
  * pasar el tope. Un fallo deja lo ya recogido y no prueba otra vía. Una conexión pausada no se lee ni se cuenta.
- * Las conexiones de la máquina de la persona no tienen lector aquí: se omiten diciéndolo.
+ * Las conexiones de la máquina de la persona no tienen lector aquí: se omiten diciéndolo. Una de pago sin lo que
+ * necesita, o que ya consumió su tope del mes, se omite sin ninguna consulta al servicio; no tiene tope diario.
  *
  * <p>Una sola recolección a la vez, con el candado y el avance de {@link CandadoRecoleccion}.
  */
@@ -49,6 +52,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
     private final FuenteRepository fuenteRepository;
     private final LecturaDiaRepository lecturaDiaRepository;
     private final ConexionRepository conexionRepository;
+    private final ConexionesPago conexionesPago;
     private final OfertaRepository ofertaRepository;
     private final AvisoService avisoService;
     private final TaskExecutor ejecutor;
@@ -57,13 +61,15 @@ public class RecoleccionServiceImpl implements RecoleccionService {
 
     public RecoleccionServiceImpl(List<FuenteOfertas> fuentes, RegistroOfertas registro,
             FuenteRepository fuenteRepository, LecturaDiaRepository lecturaDiaRepository,
-            ConexionRepository conexionRepository, OfertaRepository ofertaRepository, AvisoService avisoService,
+            ConexionRepository conexionRepository, ConexionesPago conexionesPago, OfertaRepository ofertaRepository,
+            AvisoService avisoService,
             @Qualifier("applicationTaskExecutor") TaskExecutor ejecutor, CandadoRecoleccion candado, Clock clock) {
         this.fuentes = fuentes.stream().sorted(Comparator.comparing(FuenteOfertas::fuente)).toList();
         this.registro = registro;
         this.fuenteRepository = fuenteRepository;
         this.lecturaDiaRepository = lecturaDiaRepository;
         this.conexionRepository = conexionRepository;
+        this.conexionesPago = conexionesPago;
         this.ofertaRepository = ofertaRepository;
         this.avisoService = avisoService;
         this.ejecutor = ejecutor;
@@ -103,8 +109,9 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         List<FuenteOmitida> omitidas = new ArrayList<>();
         List<FuenteOfertas> lanzadas = new ArrayList<>();
         for (FuenteOfertas fuente : fuentes) {
-            if (pausadas.contains(fuente.fuente())) {
-                omitidas.add(FuenteOmitida.de(fuente.fuente(), MotivoOmision.PAUSADA));
+            Optional<MotivoOmision> impedimento = impedimento(fuente.fuente(), pausadas);
+            if (impedimento.isPresent()) {
+                omitidas.add(FuenteOmitida.de(fuente.fuente(), impedimento.get()));
             } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, Reglas.LECTURAS_PROGRAMADAS_DIA)) {
                 lanzadas.add(fuente);
             }
@@ -152,9 +159,10 @@ public class RecoleccionServiceImpl implements RecoleccionService {
             List<FuenteOfertas> lanzadas = new ArrayList<>();
             List<FuenteOmitida> omitidas = new ArrayList<>();
             for (FuenteOfertas fuente : pedidas) {
-                if (pausadas.contains(fuente.fuente())) {
-                    omitidas.add(FuenteOmitida.de(fuente.fuente(), MotivoOmision.PAUSADA));
-                } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, fuente.fuente().lecturasDia())) {
+                Optional<MotivoOmision> impedimento = impedimento(fuente.fuente(), pausadas);
+                if (impedimento.isPresent()) {
+                    omitidas.add(FuenteOmitida.de(fuente.fuente(), impedimento.get()));
+                } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, topeDelDia(fuente.fuente()))) {
                     lanzadas.add(fuente);
                 } else {
                     omitidas.add(FuenteOmitida.de(fuente.fuente(), MotivoOmision.TOPE_DIARIO));
@@ -219,6 +227,16 @@ public class RecoleccionServiceImpl implements RecoleccionService {
             log.error("[OFERTAS] {}: fallo al procesar la lectura", fuente.fuente().nombre(), e);
             return new Resultado(EstadoLectura.FALLO, 0);
         }
+    }
+
+    /** Pausada, o de pago sin lo que necesita o con su tope del mes consumido: no se lee ni se cuenta. */
+    private Optional<MotivoOmision> impedimento(Fuente fuente, Set<Fuente> pausadas) {
+        return pausadas.contains(fuente) ? Optional.of(MotivoOmision.PAUSADA) : conexionesPago.impedimento(fuente);
+    }
+
+    /** Las de pago no tienen tope diario; igual se cuentan, para que la programada no las repita en el día. */
+    private static int topeDelDia(Fuente fuente) {
+        return fuente.conTopeDiario() ? fuente.lecturasDia() : Integer.MAX_VALUE;
     }
 
     /** Las conexiones que solo lee el lector de la máquina de la persona, como omitidas. */

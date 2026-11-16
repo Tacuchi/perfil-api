@@ -1,5 +1,7 @@
 package net.tacuchi.perfil.soporte;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -26,6 +28,10 @@ public abstract class PruebaHttp {
     protected static final AccessDePrueba ACCESS = new AccessDePrueba();
     protected static final SitioDePrueba SITIO = new SitioDePrueba();
     protected static final FuentesDePrueba FUENTES = new FuentesDePrueba();
+    protected static final ApifyDePrueba APIFY = new ApifyDePrueba();
+    /** Llave de claves inventada: 32 bytes en base64. Una subclase la cambia con prueba.llave. */
+    public static final String LLAVE_DE_PRUEBA = Base64.getEncoder()
+            .encodeToString("llave-de-prueba-de-32-bytes-0000".getBytes(StandardCharsets.UTF_8));
 
     @Autowired
     protected RestTestClient cliente;
@@ -62,6 +68,11 @@ public abstract class PruebaHttp {
         registro.add("perfil.ofertas.cron", () -> "${prueba.cron:-}");
         registro.add("perfil.aviso.activo", () -> "${prueba.aviso-activo:false}");
         registro.add("perfil.lector.token-id", () -> AccessDePrueba.TOKEN_LECTOR);
+        registro.add("perfil.claves.llave", () -> "${prueba.llave:" + LLAVE_DE_PRUEBA + "}");
+        registro.add("perfil.computrabajo.url", APIFY::url);
+        // El costo de una corrida de Apify se vuelve a consultar sin esperar los segundos reales.
+        registro.add("perfil.computrabajo.plazo-costo", () -> "500ms");
+        registro.add("perfil.computrabajo.pausa-consulta", () -> "20ms");
         // Los plazos de la corrida local se revisan seguido: las pruebas adelantan el reloj y esperan el cierre.
         registro.add("perfil.lector.revision-ms", () -> "100");
     }
@@ -77,6 +88,7 @@ public abstract class PruebaHttp {
         reloj.reiniciar();
         FUENTES.reiniciar();
         FUENTES.usarReloj(reloj);
+        APIFY.reiniciar();
     }
 
     protected RestTestClient.ResponseSpec patchIdentificado(String ruta, String json) {

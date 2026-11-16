@@ -72,6 +72,16 @@ public class ManejadorErrores {
         return problema;
     }
 
+    /** Una conexión que no es de pago no tiene clave ni tope (400); sin la llave del servidor no se cifra (409). */
+    @ExceptionHandler(ConfiguracionRechazadaException.class)
+    ProblemDetail configuracionRechazada(ConfiguracionRechazadaException ex) {
+        HttpStatus estado = ex.getMotivo() == ConfiguracionRechazadaException.Motivo.NO_ES_DE_PAGO
+                ? HttpStatus.BAD_REQUEST : HttpStatus.CONFLICT;
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(estado, ex.getMessage());
+        problema.setProperty("motivo", ex.getMotivo().name());
+        return problema;
+    }
+
     /** Un código que no abre ninguna corrida es 403; un paso fuera de orden, 409. */
     @ExceptionHandler(CorridaRechazadaException.class)
     ProblemDetail corridaRechazada(CorridaRechazadaException ex) {

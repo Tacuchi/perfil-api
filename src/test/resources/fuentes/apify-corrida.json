@@ -1,0 +1,34 @@
+{
+  "status": "SUCCEEDED",
+  "usageTotalUsd": 0.061,
+  "chargedEventCounts": {
+    "apify-actor-start": 1,
+    "apify-default-dataset-item": 20
+  },
+  "pricingInfo": {
+    "pricingModel": "PAY_PER_EVENT",
+    "apifyMarginPercentage": 0.2,
+    "pricingPerEvent": {
+      "actorChargeEvents": {
+        "apify-actor-start": {
+          "eventTitle": "Actor Start",
+          "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+          "isOneTimeEvent": true,
+          "eventPriceUsd": 0.001
+        },
+        "apify-default-dataset-item": {
+          "eventTitle": "Job",
+          "eventDescription": "Single job result in the default dataset.",
+          "isOneTimeEvent": false,
+          "eventPriceUsd": 0.003,
+          "isPrimaryEvent": true
+        }
+      }
+    }
+  },
+  "options": {
+    "timeoutSecs": 300,
+    "maxItems": 20,
+    "maxTotalChargeUsd": 0.1
+  }
+}

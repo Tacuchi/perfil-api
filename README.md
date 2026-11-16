@@ -15,12 +15,14 @@ API de perfil.tacuchi.net: guarda las versiones del CV y entrega la vigente en `
 | `GET /api/ofertas/{id}` | persona | Una oferta con su texto y, si lo trae, el correo de contacto. |
 | `PATCH /api/ofertas/{id}` | persona | `{"estado": "GUARDADA" \| "DESCARTADA" \| "POSTULADA"}`. La postulada guarda su fecha. |
 | `GET /api/fuentes` | persona | Estado de cada fuente: `CORRECTA`, `FALLO`, `BLOQUEO` o `SIN_LEER`, con su última lectura correcta y las lecturas que le quedan hoy (`lecturasRestantes`). |
+| `PUT /api/fuentes/{fuente}/clave` | persona | `{"clave": "..."}` carga o reemplaza la clave de una conexión de pago. Se guarda cifrada y nunca vuelve: `GET /api/fuentes` solo dice `tieneClave` y `claveCargadaEn`. Sin la llave de claves del servidor: `409` con motivo `FALTA_LLAVE`. |
+| `PUT /api/fuentes/{fuente}/tope` | persona | `{"topeMensual": 5}` fija el tope de gasto del mes, en dólares. `GET /api/fuentes` muestra además `consumoMes` y `queFalta`. |
 | `POST /api/recoleccion` | persona | Lanza ahora la lectura de todas las fuentes con lecturas disponibles hoy. Responde `202` con lo que va a leer y lo omitido por tope; lee en segundo plano. |
 | `POST /api/recoleccion/{fuente}` | persona | Lanza ahora la lectura de una fuente. |
 | `GET /api/recoleccion` | persona | Avance de la recolección en curso (programada o a demanda) o resultado de la última: cada fuente lanzada como `PENDIENTE`, `LEYENDO` o `TERMINADA`, con su resultado. |
 | `GET /api/tecnologias` | persona | Tecnologías del CV con las que se clasifica, principales y secundarias. |
 
-Un lanzamiento se rechaza con `409` y su `motivo`: `EN_CURSO` (ya corre otra), `TOPE_DIARIO` (la fuente ya recibió sus lecturas de hoy) o `SIN_FUENTES` (ninguna tiene lecturas disponibles).
+Un lanzamiento se rechaza con `409` y su `motivo`: `EN_CURSO` (ya corre otra), `TOPE_DIARIO` (la fuente ya recibió sus lecturas de hoy), `PAUSADA`, `DESDE_MAQUINA`, `FALTA_CONFIGURAR` (a una de pago le falta su clave, su tope o la llave del servidor), `TOPE_MENSUAL` (una de pago consumió su tope del mes) o `SIN_FUENTES` (ninguna se puede leer).
 
 «Persona» = petición con el código de Cloudflare Access (`Cf-Access-Jwt-Assertion`) válido para la aplicación y el correo configurados. Los cambios además exigen `Origin` igual a la dirección del panel.
 
@@ -43,13 +45,15 @@ Todo llega por variables de entorno; si falta una, el servicio no arranca y la n
 | `SPRING_DATASOURCE_USERNAME` · `SPRING_DATASOURCE_PASSWORD` | Usuario de la base (secreto) |
 | `PERFIL_AVISO_ACTIVO` | `true` o `false`: el correo diario de ofertas. Se declara siempre |
 | `PERFIL_AVISO_REMITENTE` | Remitente del correo diario. Obligatorio con el aviso encendido |
+| `PERFIL_CLAVES_LLAVE` | 32 bytes en base64 (`openssl rand -base64 32`): cifra las claves de las conexiones de pago (secreta). Opcional: sin ella, o con otra longitud, la API arranca y las de pago quedan «falta configurar» |
 | `SPRING_MAIL_HOST` · `SPRING_MAIL_PORT` · `SPRING_MAIL_USERNAME` · `SPRING_MAIL_PASSWORD` | Servidor de envío (SMTP) del proveedor elegido. Obligatorio con el aviso encendido; la clave es secreta |
 
-El correo diario va solo a `PERFIL_ACCESS_CORREO`. Las direcciones de las tres fuentes de ofertas y el horario de la recolección (`perfil.ofertas.*`) tienen su valor en `application.properties`; se cambian con su variable (`PERFIL_OFERTAS_CRON`, ...) solo para pruebas.
+El correo diario va solo a `PERFIL_ACCESS_CORREO`. Las direcciones de las tres fuentes de ofertas y el horario de la recolección (`perfil.ofertas.*`) tienen su valor en `application.properties`; se cambian con su variable (`PERFIL_OFERTAS_CRON`, ...) solo para pruebas. La recolección programada viene apagada (`perfil.ofertas.cron=-`): cada lectura la lanza la persona. Para encenderla, un cron en `PERFIL_OFERTAS_CRON` (por ejemplo `0 0 * * * *`). Los términos de búsqueda de Computrabajo y su máximo de avisos por corrida (`perfil.computrabajo.*`) también están en `application.properties`.
 
 ## Monitor de ofertas
 
-- **Fuentes:** Get on Board, Remotive y Remote OK, por la API pública que cada una declara. Cada hora se intenta la recolección programada, que lee una vez al día cada fuente que ese día aún no tiene lecturas. La persona puede lanzarla a demanda desde el panel. Cada fuente recibe como máximo 3 lecturas por día de Lima, programadas y a demanda, terminen bien o no: cada lectura se cuenta en la base (`lectura_dia`) antes de pedirla al sitio. Ante un fallo o un bloqueo la fuente queda marcada y no se prueba otra vía; la programada no la reintenta.
+- **Fuentes:** Get on Board, Remotive y Remote OK, por la API pública que cada una declara. La persona lanza cada lectura desde el panel. La recolección programada, apagada por defecto, si se enciende lee una vez al día cada fuente que ese día aún no tiene lecturas. Cada fuente recibe como máximo 3 lecturas por día de Lima, programadas y a demanda, terminen bien o no: cada lectura se cuenta en la base (`lectura_dia`) antes de pedirla al sitio. Ante un fallo o un bloqueo la fuente queda marcada y no se prueba otra vía; la programada no la reintenta.
+- **Computrabajo:** por el actor de Apify `santamaria-automations/computrabajo-scraper`, con la clave y el tope mensual que la persona carga en Conexiones. Busca los términos configurados en Perú, por recientes, hasta 25 avisos por corrida. Cada corrida pide a Apify un gasto máximo igual al saldo del tope y suma al consumo del mes de Lima lo que Apify informa; si ese costo no se asienta a tiempo, se calcula por el número de avisos con los precios de la corrida. Alcanzado el tope, no se lee y Apify no recibe ninguna consulta. No tiene tope diario. La clave viaja solo en la cabecera de autorización.
 - **Una recolección a la vez:** el candado y el avance viven en memoria, así que la API corre como una sola instancia.
 - **Clasificación:** reglas fijas en `clasificacion/Clasificador.java`. Las tecnologías del CV están en `src/main/resources/ofertas/tecnologias.json`, copiadas a mano del hub; si el CV cambia, hay que copiarlas de nuevo.
 - **Conservación:** las nuevas y las descartadas se eliminan 60 días después de vistas por última vez; las guardadas y las postuladas se conservan.
@@ -59,7 +63,7 @@ El correo diario va solo a `PERFIL_ACCESS_CORREO`. Las direcciones de las tres f
 
 Requiere JDK 25. `./mvnw verify` corre todas las pruebas, sobre un PostgreSQL 18 real que se levanta solo y sin Docker. Las fuentes se prueban contra sus respuestas reales guardadas (`src/test/resources/fuentes/`), con los correos de terceros reemplazados por direcciones de ejemplo; el correo diario, contra un servidor SMTP de prueba.
 
-`./mvnw spring-boot:test-run` levanta la API en `http://localhost:8080` para recorrerla con el panel: almacén en memoria, un sitio de prueba para la página 404, un Access de prueba que publica sus claves en local, un PostgreSQL de pruebas, las tres fuentes servidas desde sus respuestas guardadas y un servidor de correo de prueba con el aviso encendido. El código firmado para la persona queda en `target/codigo-local.jwt`; el panel lo envía con `PERFIL_CODIGO_LOCAL="$(cat target/codigo-local.jwt)" npm start`. La recolección no corre por horario: se dispara con los mandos locales, que exigen el mismo código y el origen del panel:
+`./mvnw spring-boot:test-run` levanta la API en `http://localhost:8080` para recorrerla con el panel: almacén en memoria, un sitio de prueba para la página 404, un Access de prueba que publica sus claves en local, un PostgreSQL de pruebas, las tres fuentes servidas desde sus respuestas guardadas, un Apify de prueba para Computrabajo (su clave es `clave-de-prueba`) y un servidor de correo de prueba con el aviso encendido. El código firmado para la persona queda en `target/codigo-local.jwt`; el panel lo envía con `PERFIL_CODIGO_LOCAL="$(cat target/codigo-local.jwt)" npm start`. La recolección no corre por horario: se dispara con los mandos locales, que exigen el mismo código y el origen del panel:
 
 | Mando | Qué hace |
 |---|---|

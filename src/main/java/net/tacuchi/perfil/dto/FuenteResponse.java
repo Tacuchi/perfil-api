@@ -1,5 +1,6 @@
 package net.tacuchi.perfil.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import net.tacuchi.perfil.model.EstadoConexion;
 import net.tacuchi.perfil.model.EstadoLectura;
@@ -10,8 +11,10 @@ import net.tacuchi.perfil.model.Via;
 /**
  * Estado de una conexión: cómo terminó su última lectura, cuándo fue la última correcta y cuántas lecturas le
  * quedan hoy (día de Lima); desde dónde se lee, lo que necesita, si lo tiene y si se puede leer; cuántas lecturas
- * admite al día y, si se lee desde la máquina, cuántos avisos por corrida. Los campos solo crecen: el panel
- * desplegado lee los primeros ocho.
+ * admite al día y, si se lee desde la máquina, cuántos avisos por corrida. Las de pago dicen además si tienen clave y
+ * desde cuándo (nunca la clave), su tope mensual y su consumo del mes de Lima en dólares, y qué les falta para
+ * leerse; no tienen tope diario: {@code lecturasDia} y {@code lecturasRestantes} van en 0. Los campos solo crecen: el
+ * panel desplegado lee los primeros ocho.
  */
 public record FuenteResponse(
         Fuente fuente,
@@ -29,5 +32,10 @@ public record FuenteResponse(
         String motivoPausa,
         EstadoConexion estadoConexion,
         int lecturasDia,
-        Integer avisosPorCorrida) {
+        Integer avisosPorCorrida,
+        boolean tieneClave,
+        Instant claveCargadaEn,
+        BigDecimal topeMensual,
+        BigDecimal consumoMes,
+        String queFalta) {
 }

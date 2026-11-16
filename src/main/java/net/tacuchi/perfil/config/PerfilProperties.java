@@ -2,9 +2,14 @@ package net.tacuchi.perfil.config;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.time.Duration;
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.validation.annotation.Validated;
@@ -24,7 +29,9 @@ public record PerfilProperties(
         @Valid @DefaultValue Panel panel,
         @Valid @DefaultValue Ofertas ofertas,
         @Valid @DefaultValue Aviso aviso,
-        @Valid @DefaultValue Lector lector) {
+        @Valid @DefaultValue Lector lector,
+        @Valid @DefaultValue Claves claves,
+        @Valid @DefaultValue Computrabajo computrabajo) {
 
     private static final String URL = "https?://\\S+";
     private static final String URL_INVALIDA = "debe ser una URL http(s)";
@@ -80,5 +87,33 @@ public record PerfilProperties(
      * funciona sin proveedor de correo. Encendido exige el remitente y el servidor de envío (spring.mail.*).
      */
     public record Aviso(@NotNull Boolean activo, @Email String remitente) {
+    }
+
+    /**
+     * Llave maestra con la que se cifran las claves de las conexiones de pago: 32 bytes en base64
+     * (PERFIL_CLAVES_LLAVE). Es opcional a propósito: sin ella, o con una de otra longitud, la API arranca y las
+     * conexiones de pago quedan sin configurar. Nunca se registra.
+     */
+    public record Claves(String llave) {
+
+        @Override
+        public String toString() {
+            return "Claves[llave=" + (llave == null || llave.isBlank() ? "ausente" : "presente") + "]";
+        }
+    }
+
+    /**
+     * Computrabajo, leído por un actor de Apify. Cada lectura busca los términos indicados en Perú, por recientes, y
+     * pide como mucho {@code maxAvisos} en total. El costo de una corrida tarda unos segundos en asentarse: se
+     * consulta cada {@code pausaConsulta} hasta {@code plazoCosto}; la corrida entera tiene {@code plazoCorrida}.
+     */
+    public record Computrabajo(
+            @NotBlank @Pattern(regexp = URL, message = URL_INVALIDA) String url,
+            @NotBlank String actor,
+            @NotEmpty List<@NotBlank String> terminos,
+            @Min(1) @Max(100) int maxAvisos,
+            @NotNull Duration plazoCorrida,
+            @NotNull Duration plazoCosto,
+            @NotNull Duration pausaConsulta) {
     }
 }
