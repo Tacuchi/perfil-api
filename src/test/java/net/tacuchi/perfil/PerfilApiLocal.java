@@ -77,7 +77,7 @@ public final class PerfilApiLocal {
                 "--spring.mail.host=127.0.0.1",
                 "--spring.mail.port=" + correo.getSmtp().getPort()));
         argumentos.addAll(List.of(args));
-        ArranqueLocalConfig.preparar(fuentes, correo);
+        ArranqueLocalConfig.preparar(fuentes, apify, correo);
         SpringApplication.from(PerfilApiApplication::main)
                 .with(ArranqueLocalConfig.class)
                 .run(argumentos.toArray(String[]::new));

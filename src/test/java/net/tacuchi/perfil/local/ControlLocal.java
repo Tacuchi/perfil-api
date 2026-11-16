@@ -18,6 +18,7 @@ import net.tacuchi.perfil.model.FalloMaquina;
 import net.tacuchi.perfil.model.Fuente;
 import net.tacuchi.perfil.service.CorridaLocalService;
 import net.tacuchi.perfil.service.RecoleccionService;
+import net.tacuchi.perfil.soporte.ApifyDePrueba;
 import net.tacuchi.perfil.soporte.EntregasDePrueba;
 import net.tacuchi.perfil.soporte.FuentesDePrueba;
 import net.tacuchi.perfil.soporte.RelojDePrueba;
@@ -32,8 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Mandos del arranque local para recorrer el monitor de ofertas: recoger ahora, disparar la programada sin
- * esperarla, pasar al día siguiente, hacer que una fuente falle, bloquee o quede en pausa, recorrer una corrida
- * local sin el lector real y ver los correos recibidos. Solo existe en el classpath de pruebas
+ * esperarla, pasar al día siguiente, adelantar el reloj sin leer nada, hacer que una fuente falle, bloquee o quede en
+ * pausa, recorrer una corrida local sin el lector real, contar las consultas que recibió el doble de Apify y ver los
+ * correos recibidos. Solo existe en el classpath de pruebas
  * y solo se registra en el arranque local; pasa por la misma identificación que el resto de /api.
  */
 @TestComponent
@@ -46,6 +48,7 @@ public class ControlLocal {
     private final RelojDePrueba reloj;
     private final FuentesDePrueba fuentes;
     private final GreenMail correo;
+    private final ApifyDePrueba apify;
     private final CorridaLocalService corridaLocal;
 
     /** Lo que el lector simulado entrega de cada conexión de la máquina. */
@@ -69,6 +72,19 @@ public class ControlLocal {
     public Map<String, Object> diaSiguiente() {
         reloj.adelantar(Duration.ofDays(1));
         return programada();
+    }
+
+    /** Adelanta el reloj sin leer nada, como pasan los días cuando la persona no pide ninguna lectura. */
+    @PostMapping("/adelantar")
+    public Map<String, Object> adelantar(@RequestParam(defaultValue = "1") int dias) {
+        reloj.adelantar(Duration.ofDays(dias));
+        return Map.of("ahora", reloj.instant().toString());
+    }
+
+    /** Cuántas consultas recibió el doble de Apify desde que arrancó la API local. */
+    @GetMapping("/apify")
+    public Map<String, Object> apify() {
+        return Map.of("consultas", apify.consultas());
     }
 
     @PutMapping("/fuentes/{fuente}")
@@ -105,11 +121,17 @@ public class ControlLocal {
             }
             EntregaRequest entrega = resultado == Resultado.AVISOS
                     ? new EntregaRequest(corrida, EntregasDePrueba.avisos("local-" + reloj.millis(),
-                            Math.min(avisos, fuente.avisosMaximos()), reloj.instant()), null)
+                            Math.min(avisos, fuente.avisosMaximos()), reloj.instant(),
+                            avisoOriginal(fuente.fuente())), null)
                     : new EntregaRequest(corrida, null, FalloMaquina.valueOf(resultado.name()));
             corridaLocal.entregar(corrida, fuente.fuente(), entrega);
         }
         return corridaLocal.terminar(corrida);
+    }
+
+    /** Cada conexión de la máquina enlaza sus avisos a su propio sitio, como los entrega el lector real. */
+    private static String avisoOriginal(Fuente fuente) {
+        return fuente == Fuente.BUMERAN ? "https://www.bumeran.com.pe/empleos/" : "https://www.linkedin.com/jobs/view/";
     }
 
     @GetMapping("/correos")
