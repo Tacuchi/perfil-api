@@ -33,6 +33,20 @@ public class LecturaDiaRepository {
                 .update() == 1;
     }
 
+    /** Devuelve una lectura reservada ese día que al final no gastó nada del sitio. */
+    public void devolver(Fuente fuente, LocalDate dia) {
+        int borradas = jdbc.sql("DELETE FROM lectura_dia WHERE fuente = :fuente AND dia = :dia AND lecturas = 1")
+                .param("fuente", fuente.name())
+                .param("dia", dia)
+                .update();
+        if (borradas == 0) {
+            jdbc.sql("UPDATE lectura_dia SET lecturas = lecturas - 1 WHERE fuente = :fuente AND dia = :dia")
+                    .param("fuente", fuente.name())
+                    .param("dia", dia)
+                    .update();
+        }
+    }
+
     /** Lecturas de cada fuente en ese día; una fuente sin lecturas no aparece. */
     public Map<Fuente, Integer> delDia(LocalDate dia) {
         return jdbc.sql("SELECT fuente, lecturas FROM lectura_dia WHERE dia = :dia")

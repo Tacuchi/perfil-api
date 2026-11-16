@@ -61,6 +61,9 @@ public abstract class PruebaHttp {
         // Las pruebas disparan la recolección a mano; el aviso se enciende solo donde se prueba.
         registro.add("perfil.ofertas.cron", () -> "${prueba.cron:-}");
         registro.add("perfil.aviso.activo", () -> "${prueba.aviso-activo:false}");
+        registro.add("perfil.lector.token-id", () -> AccessDePrueba.TOKEN_LECTOR);
+        // Los plazos de la corrida local se revisan seguido: las pruebas adelantan el reloj y esperan el cierre.
+        registro.add("perfil.lector.revision-ms", () -> "100");
     }
 
     @BeforeEach

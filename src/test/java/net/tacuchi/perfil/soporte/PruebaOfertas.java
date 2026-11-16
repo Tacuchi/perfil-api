@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.function.Predicate;
 import net.tacuchi.perfil.dto.FuenteEnRecoleccion;
+import net.tacuchi.perfil.dto.FuenteOmitida;
 import net.tacuchi.perfil.dto.FuenteResponse;
 import net.tacuchi.perfil.dto.RecoleccionResponse;
 import net.tacuchi.perfil.model.EstadoRecoleccion;
@@ -14,6 +15,10 @@ import net.tacuchi.perfil.dto.OfertaResponse;
 import net.tacuchi.perfil.fuentes.FuenteOfertas;
 import net.tacuchi.perfil.model.Fuente;
 import net.tacuchi.perfil.model.OfertaRecogida;
+import net.tacuchi.perfil.model.MotivoOmision;
+import net.tacuchi.perfil.model.Reglas;
+import net.tacuchi.perfil.model.Via;
+import net.tacuchi.perfil.service.CorridaLocalService;
 import net.tacuchi.perfil.service.RecoleccionService;
 import net.tacuchi.perfil.service.RegistroOfertas;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +34,9 @@ public abstract class PruebaOfertas extends PruebaHttp {
 
     @Autowired
     protected RecoleccionService recoleccion;
+
+    @Autowired
+    protected CorridaLocalService corridaLocal;
 
     /** Lo que entregaría una lectura completa de la fuente en este instante del reloj de prueba. */
     protected void leidas(Fuente fuente, OfertaRecogida... ofertas) {
@@ -71,6 +79,16 @@ public abstract class PruebaOfertas extends PruebaHttp {
         return getIdentificado("/api/fuentes").expectStatus().isOk()
                 .expectBody(new ParameterizedTypeReference<List<FuenteResponse>>() { })
                 .returnResult().getResponseBody();
+    }
+
+    /** Las conexiones que lee el servidor; las de la máquina tienen sus propias pruebas. */
+    protected List<FuenteResponse> fuentesDelServidor() {
+        return fuentes().stream().filter(f -> f.via() == Via.SERVIDOR).toList();
+    }
+
+    /** Omitidas por pausa o tope; sin las de la máquina, que toda recolección del servidor omite. */
+    protected static List<FuenteOmitida> omitidasDelServidor(RecoleccionResponse avance) {
+        return avance.omitidas().stream().filter(o -> o.motivo() != MotivoOmision.DESDE_MAQUINA).toList();
     }
 
     protected FuenteResponse fuente(Fuente fuente) {
@@ -118,9 +136,11 @@ public abstract class PruebaOfertas extends PruebaHttp {
                 .orElseThrow(() -> new AssertionError(fuente + " no está entre las lanzadas: " + avance));
     }
 
-    /** Ninguna recolección de una prueba sigue viva en la siguiente. */
+    /** Ninguna recolección de una prueba sigue viva en la siguiente; una corrida local abierta se vence. */
     @AfterEach
     void terminarRecoleccionEnCurso() {
+        reloj.adelantar(Reglas.PLAZO_CORRIDA_LOCAL.plus(Duration.ofMinutes(1)));
+        corridaLocal.revisarPlazos();
         for (Fuente fuente : Fuente.values()) {
             FUENTES.soltar(fuente);
         }

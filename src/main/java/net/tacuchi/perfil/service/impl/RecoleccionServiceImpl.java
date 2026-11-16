@@ -5,9 +5,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.function.UnaryOperator;
 import lombok.extern.slf4j.Slf4j;
 import net.tacuchi.perfil.dto.FuenteEnRecoleccion;
 import net.tacuchi.perfil.dto.FuenteOmitida;
@@ -16,17 +16,16 @@ import net.tacuchi.perfil.exception.RecoleccionRechazadaException;
 import net.tacuchi.perfil.fuentes.FuenteOfertas;
 import net.tacuchi.perfil.fuentes.LecturaFallidaException;
 import net.tacuchi.perfil.model.EstadoLectura;
-import net.tacuchi.perfil.model.EstadoRecoleccion;
 import net.tacuchi.perfil.model.Fuente;
 import net.tacuchi.perfil.model.MotivoOmision;
 import net.tacuchi.perfil.model.OrigenRecoleccion;
-import net.tacuchi.perfil.model.PasoFuente;
 import net.tacuchi.perfil.model.Reglas;
 import net.tacuchi.perfil.repository.ConexionRepository;
 import net.tacuchi.perfil.repository.FuenteRepository;
 import net.tacuchi.perfil.repository.LecturaDiaRepository;
 import net.tacuchi.perfil.repository.OfertaRepository;
 import net.tacuchi.perfil.service.AvisoService;
+import net.tacuchi.perfil.service.CandadoRecoleccion;
 import net.tacuchi.perfil.service.RecoleccionService;
 import net.tacuchi.perfil.service.RegistroOfertas;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,11 +36,9 @@ import org.springframework.stereotype.Service;
 /**
  * Cada lectura se cuenta por fuente y día de Lima antes de pedirla al sitio: ni un reinicio ni un fallo dejan
  * pasar el tope. Un fallo deja lo ya recogido y no prueba otra vía. Una conexión pausada no se lee ni se cuenta.
+ * Las conexiones de la máquina de la persona no tienen lector aquí: se omiten diciéndolo.
  *
- * <p>Una sola recolección a la vez, programada o a demanda. El candado se toma en el hilo que la pide (para
- * responder al instante si se acepta) y lo suelta el hilo que lee; por eso es una bandera guardada por un monitor y
- * no un {@code ReentrantLock}, que solo puede soltar el hilo que lo tomó. El avance vive en memoria: con una sola
- * instancia de la API basta.
+ * <p>Una sola recolección a la vez, con el candado y el avance de {@link CandadoRecoleccion}.
  */
 @Slf4j
 @Service
@@ -55,18 +52,13 @@ public class RecoleccionServiceImpl implements RecoleccionService {
     private final OfertaRepository ofertaRepository;
     private final AvisoService avisoService;
     private final TaskExecutor ejecutor;
+    private final CandadoRecoleccion candado;
     private final Clock clock;
-
-    private final Object candado = new Object();
-    /** Guardada por {@link #candado}. */
-    private boolean enCurso;
-    /** Se cambia solo dentro de {@link #candado}; se lee sin él. */
-    private volatile RecoleccionResponse avance = RecoleccionResponse.NINGUNA;
 
     public RecoleccionServiceImpl(List<FuenteOfertas> fuentes, RegistroOfertas registro,
             FuenteRepository fuenteRepository, LecturaDiaRepository lecturaDiaRepository,
             ConexionRepository conexionRepository, OfertaRepository ofertaRepository, AvisoService avisoService,
-            @Qualifier("applicationTaskExecutor") TaskExecutor ejecutor, Clock clock) {
+            @Qualifier("applicationTaskExecutor") TaskExecutor ejecutor, CandadoRecoleccion candado, Clock clock) {
         this.fuentes = fuentes.stream().sorted(Comparator.comparing(FuenteOfertas::fuente)).toList();
         this.registro = registro;
         this.fuenteRepository = fuenteRepository;
@@ -75,6 +67,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         this.ofertaRepository = ofertaRepository;
         this.avisoService = avisoService;
         this.ejecutor = ejecutor;
+        this.candado = candado;
         this.clock = clock;
     }
 
@@ -85,7 +78,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
 
     @Override
     public void recoger() {
-        if (!tomar()) {
+        if (!candado.tomar()) {
             log.info("[OFERTAS] ya hay una recolección en curso; la programada se omite");
             return;
         }
@@ -94,7 +87,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         try {
             lanzadas = reservarProgramada(inicio);
         } catch (RuntimeException e) {
-            soltar(true);
+            candado.soltar(true);
             throw e;
         }
         correr(lanzadas, inicio);
@@ -102,7 +95,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
 
     /**
      * Reserva la lectura del día de cada fuente activa que hoy no tiene ninguna y muestra el avance si hay algo que
-     * leer, con las pausadas como omitidas.
+     * leer, con las pausadas y las de la máquina como omitidas.
      */
     private List<FuenteOfertas> reservarProgramada(Instant inicio) {
         LocalDate hoy = LocalDate.ofInstant(inicio, Reglas.ZONA_PERSONA);
@@ -116,13 +109,12 @@ public class RecoleccionServiceImpl implements RecoleccionService {
                 lanzadas.add(fuente);
             }
         }
+        omitidas.addAll(desdeMaquina());
         if (!lanzadas.isEmpty()) {
             // Una programada sin nada que leer no reemplaza el último resultado.
-            cambiarAvance(a -> RecoleccionResponse.iniciada(OrigenRecoleccion.PROGRAMADA, inicio,
+            candado.cambiar(a -> RecoleccionResponse.iniciada(OrigenRecoleccion.PROGRAMADA, inicio,
                     fuentesDe(lanzadas), omitidas));
-            if (!omitidas.isEmpty()) {
-                log.info("[OFERTAS] la programada omite {} conexiones pausadas", omitidas.size());
-            }
+            log.info("[OFERTAS] la programada omite {} conexiones pausadas o de la máquina", omitidas.size());
         }
         return List.copyOf(lanzadas);
     }
@@ -134,6 +126,10 @@ public class RecoleccionServiceImpl implements RecoleccionService {
 
     @Override
     public RecoleccionResponse lanzar(Fuente fuente) {
+        if (fuente.desdeMaquina()) {
+            throw RecoleccionRechazadaException.omitida(FuenteOmitida.de(fuente, MotivoOmision.DESDE_MAQUINA),
+                    fuente.lecturasDia());
+        }
         FuenteOfertas pedida = fuentes.stream().filter(f -> f.fuente() == fuente).findFirst()
                 .orElseThrow(() -> new IllegalStateException("fuente sin lector: " + fuente));
         return lanzarDemanda(List.of(pedida), false);
@@ -141,11 +137,11 @@ public class RecoleccionServiceImpl implements RecoleccionService {
 
     @Override
     public RecoleccionResponse avance() {
-        return avance;
+        return candado.avance();
     }
 
     private RecoleccionResponse lanzarDemanda(List<FuenteOfertas> pedidas, boolean general) {
-        if (!tomar()) {
+        if (!candado.tomar()) {
             throw RecoleccionRechazadaException.enCurso();
         }
         boolean iniciada = false;
@@ -158,17 +154,20 @@ public class RecoleccionServiceImpl implements RecoleccionService {
             for (FuenteOfertas fuente : pedidas) {
                 if (pausadas.contains(fuente.fuente())) {
                     omitidas.add(FuenteOmitida.de(fuente.fuente(), MotivoOmision.PAUSADA));
-                } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, Reglas.TOPE_LECTURAS_DIA)) {
+                } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, fuente.fuente().lecturasDia())) {
                     lanzadas.add(fuente);
                 } else {
                     omitidas.add(FuenteOmitida.de(fuente.fuente(), MotivoOmision.TOPE_DIARIO));
                 }
             }
+            if (general) {
+                omitidas.addAll(desdeMaquina());
+            }
             if (lanzadas.isEmpty()) {
                 throw general ? RecoleccionRechazadaException.sinFuentes(omitidas, Reglas.TOPE_LECTURAS_DIA)
                         : RecoleccionRechazadaException.omitida(omitidas.getFirst(), Reglas.TOPE_LECTURAS_DIA);
             }
-            RecoleccionResponse respuesta = cambiarAvance(a -> RecoleccionResponse.iniciada(
+            RecoleccionResponse respuesta = candado.cambiar(a -> RecoleccionResponse.iniciada(
                     OrigenRecoleccion.DEMANDA, inicio, fuentesDe(lanzadas), omitidas));
             iniciada = true;
             log.info("[OFERTAS] recolección a demanda lanzada: {} fuentes, {} omitidas",
@@ -176,7 +175,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
             ejecutor.execute(() -> correr(List.copyOf(lanzadas), inicio));
             return respuesta;
         } catch (RuntimeException e) {
-            soltar(!iniciada);
+            candado.soltar(!iniciada);
             throw e;
         }
     }
@@ -185,9 +184,9 @@ public class RecoleccionServiceImpl implements RecoleccionService {
     private void correr(List<FuenteOfertas> lanzadas, Instant inicio) {
         try {
             for (FuenteOfertas fuente : lanzadas) {
-                cambiarAvance(a -> a.conFuente(fuente.fuente(), FuenteEnRecoleccion::leyendo));
+                candado.cambiar(a -> a.conFuente(fuente.fuente(), FuenteEnRecoleccion::leyendo));
                 Resultado resultado = leer(fuente, inicio);
-                cambiarAvance(a -> a.conFuente(fuente.fuente(),
+                candado.cambiar(a -> a.conFuente(fuente.fuente(),
                         f -> f.terminada(resultado.estado(), resultado.ofertas())));
             }
             int eliminadas = ofertaRepository.eliminarVistasAntesDe(inicio.minus(Reglas.CONSERVACION_OFERTAS));
@@ -198,7 +197,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         } catch (RuntimeException e) {
             log.error("[OFERTAS] la recolección se interrumpió por un fallo inesperado", e);
         } finally {
-            soltar(lanzadas.isEmpty());
+            candado.soltar(lanzadas.isEmpty());
         }
     }
 
@@ -222,41 +221,10 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         }
     }
 
-    private boolean tomar() {
-        synchronized (candado) {
-            if (enCurso) {
-                return false;
-            }
-            enCurso = true;
-            return true;
-        }
-    }
-
-    /**
-     * Suelta el candado y, si la recolección llegó a mostrarse, la cierra en el mismo paso: quien ve el resultado
-     * final ya puede lanzar otra. Una fuente que no llegó a terminar figura como fallida.
-     */
-    private void soltar(boolean sinAvance) {
-        synchronized (candado) {
-            enCurso = false;
-            if (sinAvance || avance.estado() != EstadoRecoleccion.EN_CURSO) {
-                return;
-            }
-            RecoleccionResponse cerrado = avance;
-            for (FuenteEnRecoleccion fuente : avance.fuentes()) {
-                if (fuente.paso() != PasoFuente.TERMINADA) {
-                    cerrado = cerrado.conFuente(fuente.fuente(), f -> f.terminada(EstadoLectura.FALLO, 0));
-                }
-            }
-            avance = cerrado.terminada(clock.instant());
-        }
-    }
-
-    private RecoleccionResponse cambiarAvance(UnaryOperator<RecoleccionResponse> cambio) {
-        synchronized (candado) {
-            avance = cambio.apply(avance);
-            return avance;
-        }
+    /** Las conexiones que solo lee el lector de la máquina de la persona, como omitidas. */
+    private static List<FuenteOmitida> desdeMaquina() {
+        return Arrays.stream(Fuente.values()).filter(Fuente::desdeMaquina)
+                .map(f -> FuenteOmitida.de(f, MotivoOmision.DESDE_MAQUINA)).toList();
     }
 
     private static List<Fuente> fuentesDe(List<FuenteOfertas> lectores) {

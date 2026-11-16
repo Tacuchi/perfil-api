@@ -9,8 +9,9 @@ import net.tacuchi.perfil.model.Via;
 
 /**
  * Estado de una conexión: cómo terminó su última lectura, cuándo fue la última correcta y cuántas lecturas le
- * quedan hoy (día de Lima); desde dónde se lee, lo que necesita, si lo tiene y si se puede leer. Los campos solo
- * crecen: el panel desplegado lee los primeros ocho.
+ * quedan hoy (día de Lima); desde dónde se lee, lo que necesita, si lo tiene y si se puede leer; cuántas lecturas
+ * admite al día y, si se lee desde la máquina, cuántos avisos por corrida. Los campos solo crecen: el panel
+ * desplegado lee los primeros ocho.
  */
 public record FuenteResponse(
         Fuente fuente,
@@ -26,5 +27,7 @@ public record FuenteResponse(
         boolean tieneLoQueNecesita,
         boolean pausada,
         String motivoPausa,
-        EstadoConexion estadoConexion) {
+        EstadoConexion estadoConexion,
+        int lecturasDia,
+        Integer avisosPorCorrida) {
 }

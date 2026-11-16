@@ -36,7 +36,7 @@ class RecoleccionADemandaTest extends PruebaOfertas {
         assertThat(aceptada.estado()).isEqualTo(EstadoRecoleccion.EN_CURSO);
         assertThat(aceptada.origen()).isEqualTo(OrigenRecoleccion.DEMANDA);
         assertThat(aceptada.total()).isEqualTo(3);
-        assertThat(aceptada.omitidas()).isEmpty();
+        assertThat(omitidasDelServidor(aceptada)).isEmpty();
         assertThat(aceptada.fuentes()).extracting(f -> f.fuente())
                 .containsExactly(Fuente.GET_ON_BOARD, Fuente.REMOTIVE, Fuente.REMOTE_OK);
 
@@ -54,7 +54,7 @@ class RecoleccionADemandaTest extends PruebaOfertas {
         assertThat(FUENTES.lecturas(Fuente.REMOTE_OK)).isEqualTo(1);
         assertThat(FUENTES.lecturas(Fuente.GET_ON_BOARD)).as("una página por categoría").isEqualTo(4);
         assertThat(todas()).isNotEmpty();
-        assertThat(fuentes()).allSatisfy(f -> assertThat(f.lecturasRestantes()).isEqualTo(2));
+        assertThat(fuentesDelServidor()).allSatisfy(f -> assertThat(f.lecturasRestantes()).isEqualTo(2));
     }
 
     @Test
@@ -156,13 +156,13 @@ class RecoleccionADemandaTest extends PruebaOfertas {
         assertThat(aceptada.total()).isEqualTo(2);
         assertThat(aceptada.fuentes()).extracting(f -> f.fuente())
                 .containsExactly(Fuente.GET_ON_BOARD, Fuente.REMOTE_OK);
-        assertThat(aceptada.omitidas()).singleElement().satisfies(o -> {
+        assertThat(omitidasDelServidor(aceptada)).singleElement().satisfies(o -> {
             assertThat(o.fuente()).isEqualTo(Fuente.REMOTIVE);
             assertThat(o.motivo()).isEqualTo(MotivoOmision.TOPE_DIARIO);
         });
         RecoleccionResponse fin = esperarFin();
         assertThat(fin.terminadas()).isEqualTo(2);
-        assertThat(fin.omitidas()).hasSize(1);
+        assertThat(omitidasDelServidor(fin)).hasSize(1);
         assertThat(FUENTES.lecturas(Fuente.REMOTIVE, hoy())).isEqualTo(3);
         assertThat(fuente(Fuente.REMOTIVE).lecturasRestantes()).isZero();
     }

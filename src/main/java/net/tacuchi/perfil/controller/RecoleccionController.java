@@ -1,8 +1,10 @@
 package net.tacuchi.perfil.controller;
 
 import lombok.RequiredArgsConstructor;
+import net.tacuchi.perfil.dto.CorridaAbiertaResponse;
 import net.tacuchi.perfil.dto.RecoleccionResponse;
 import net.tacuchi.perfil.model.Fuente;
+import net.tacuchi.perfil.service.CorridaLocalService;
 import net.tacuchi.perfil.service.RecoleccionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Recolección a demanda y su avance. Exige a la persona identificada; lanzar exige además venir del panel. Un
- * lanzamiento responde al instante con lo que se va a leer y lo omitido; la lectura sigue en otro hilo.
+ * lanzamiento responde al instante con lo que se va a leer y lo omitido; la lectura sigue en otro hilo. La corrida
+ * de la máquina responde con el código de un solo uso que el panel pasa al lector.
  */
 @RestController
 @RequestMapping("/api/recoleccion")
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RecoleccionController {
 
     private final RecoleccionService recoleccionService;
+    private final CorridaLocalService corridaLocalService;
 
     @GetMapping
     public RecoleccionResponse avance() {
@@ -32,6 +36,12 @@ public class RecoleccionController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public RecoleccionResponse lanzar() {
         return recoleccionService.lanzar();
+    }
+
+    @PostMapping("/maquina")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public CorridaAbiertaResponse abrirCorridaLocal() {
+        return corridaLocalService.abrir();
     }
 
     @PostMapping("/{fuente}")

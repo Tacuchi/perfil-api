@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Hace de equipo de Cloudflare Access en local: publica sus claves en la misma ruta que Cloudflare
@@ -27,6 +28,8 @@ public final class AccessDePrueba {
 
     public static final String AUD = "aud-de-prueba";
     public static final String CORREO = "persona@ejemplo.test";
+    /** Identificador ({@code common_name}) del token de servicio del lector configurado en la API. */
+    public static final String TOKEN_LECTOR = "lector-de-prueba.access";
 
     private final RSAKey clave;
     private final RSAKey claveAjena;
@@ -82,24 +85,56 @@ public final class AccessDePrueba {
         return firmar(claveAjena, emisor(), AUD, CORREO, Instant.now().plus(Duration.ofHours(1)));
     }
 
+    /** Código de Access de un token de servicio: trae su identificador y no trae correo. */
+    public String codigoDeServicio(String tokenId) {
+        return firmar(clave, emisor(), AUD, Map.of("common_name", tokenId), Instant.now().plus(Duration.ofHours(1)));
+    }
+
+    public String codigoDelLector() {
+        return codigoDeServicio(TOKEN_LECTOR);
+    }
+
+    public String codigoDelLector(Duration vigencia) {
+        return firmar(clave, emisor(), AUD, Map.of("common_name", TOKEN_LECTOR), Instant.now().plus(vigencia));
+    }
+
+    public String codigoDelLectorVencido() {
+        return firmar(clave, emisor(), AUD, Map.of("common_name", TOKEN_LECTOR), Instant.now().minus(Duration.ofHours(1)));
+    }
+
+    public String codigoDelLectorConFirmaAjena() {
+        return firmar(claveAjena, emisor(), AUD, Map.of("common_name", TOKEN_LECTOR),
+                Instant.now().plus(Duration.ofHours(1)));
+    }
+
+    /** Un código que trae el identificador del lector y también el correo de la persona. */
+    public String codigoDelLectorConCorreo() {
+        return firmar(clave, emisor(), AUD, Map.of("common_name", TOKEN_LECTOR, "email", CORREO),
+                Instant.now().plus(Duration.ofHours(1)));
+    }
+
     public void detener() {
         servidor.stop(0);
     }
 
     private static String firmar(RSAKey firma, String emisor, String aud, String correo, Instant vence) {
+        return firmar(firma, emisor, aud, Map.of("email", correo), vence);
+    }
+
+    private static String firmar(RSAKey firma, String emisor, String aud, Map<String, String> datos, Instant vence) {
         // Emitido ahora; un código vencido se emitió antes de su vencimiento.
         Instant emitido = Instant.now().isBefore(vence) ? Instant.now() : vence.minus(Duration.ofHours(1));
         try {
+            JWTClaimsSet.Builder contenido = new JWTClaimsSet.Builder()
+                    .issuer(emisor)
+                    .audience(List.of(aud))
+                    .issueTime(Date.from(emitido))
+                    .notBeforeTime(Date.from(emitido))
+                    .expirationTime(Date.from(vence));
+            datos.forEach(contenido::claim);
             SignedJWT jwt = new SignedJWT(
                     new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(firma.getKeyID()).type(JOSEObjectType.JWT).build(),
-                    new JWTClaimsSet.Builder()
-                            .issuer(emisor)
-                            .audience(List.of(aud))
-                            .claim("email", correo)
-                            .issueTime(Date.from(emitido))
-                            .notBeforeTime(Date.from(emitido))
-                            .expirationTime(Date.from(vence))
-                            .build());
+                    contenido.build());
             jwt.sign(new RSASSASigner(firma));
             return jwt.serialize();
         } catch (Exception e) {

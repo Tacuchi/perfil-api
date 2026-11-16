@@ -37,11 +37,12 @@ public class ConexionesServiceImpl implements ConexionesService {
     public List<FuenteResponse> listar() {
         Map<Fuente, LecturaFuente> lecturas = fuenteRepository.todas().stream()
                 .collect(Collectors.toMap(LecturaFuente::fuente, Function.identity()));
-        Map<Fuente, Integer> deHoy = lecturaDiaRepository.delDia(LocalDate.ofInstant(clock.instant(), Reglas.ZONA_PERSONA));
+        LocalDate hoy = LocalDate.ofInstant(clock.instant(), Reglas.ZONA_PERSONA);
+        Map<Fuente, Integer> deHoy = lecturaDiaRepository.delDia(hoy);
         Map<Fuente, Conexion> conexiones = conexionRepository.todas();
         return Arrays.stream(Fuente.values())
                 .map(fuente -> respuesta(fuente, lecturas.get(fuente), deHoy.getOrDefault(fuente, 0),
-                        conexiones.get(fuente)))
+                        conexiones.get(fuente), hoy))
                 .toList();
     }
 
@@ -65,8 +66,9 @@ public class ConexionesServiceImpl implements ConexionesService {
         return listar().stream().filter(f -> f.fuente() == fuente).findFirst().orElseThrow();
     }
 
-    private static FuenteResponse respuesta(Fuente fuente, LecturaFuente lectura, int lecturasHoy, Conexion conexion) {
-        int restantes = Math.max(0, Reglas.TOPE_LECTURAS_DIA - lecturasHoy);
+    private static FuenteResponse respuesta(Fuente fuente, LecturaFuente lectura, int lecturasHoy, Conexion conexion,
+            LocalDate hoy) {
+        int restantes = Math.max(0, fuente.lecturasDia() - lecturasHoy);
         boolean leida = lectura != null;
         return new FuenteResponse(fuente, fuente.nombre(),
                 leida ? lectura.estado() : EstadoLectura.SIN_LEER,
@@ -75,7 +77,7 @@ public class ConexionesServiceImpl implements ConexionesService {
                 leida ? lectura.ultimaCorrecta() : null,
                 leida ? lectura.ofertasLeidas() : 0,
                 restantes,
-                fuente.via(), fuente.necesita(), conexion.tieneLoQueNecesita(), conexion.pausada(),
-                conexion.motivoPausa(), conexion.estado());
+                fuente.via(), fuente.necesita(), conexion.tieneLoQueNecesita(lectura), conexion.pausada(),
+                conexion.motivoPausa(), conexion.estado(lectura, hoy), fuente.lecturasDia(), fuente.avisosPorEntrega());
     }
 }

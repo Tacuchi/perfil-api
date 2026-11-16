@@ -37,9 +37,9 @@ class ConexionesTest extends PruebaOfertas {
 
     @Test
     void cadaConexionDiceDesdeDondeSeLeeLoQueNecesitaYSiSePuedeLeer() {
-        assertThat(fuentes()).extracting(FuenteResponse::fuente)
+        assertThat(fuentesDelServidor()).extracting(FuenteResponse::fuente)
                 .containsExactly(Fuente.GET_ON_BOARD, Fuente.REMOTIVE, Fuente.REMOTE_OK);
-        assertThat(fuentes()).allSatisfy(f -> {
+        assertThat(fuentesDelServidor()).allSatisfy(f -> {
             assertThat(f.via()).isEqualTo(Via.SERVIDOR);
             assertThat(f.necesita()).isEqualTo(Requisito.NADA);
             assertThat(f.tieneLoQueNecesita()).isTrue();
@@ -107,7 +107,7 @@ class ConexionesTest extends PruebaOfertas {
         RecoleccionResponse fin = avance();
         assertThat(fin.origen()).isEqualTo(OrigenRecoleccion.PROGRAMADA);
         assertThat(fin.fuentes()).extracting(f -> f.fuente()).containsExactly(Fuente.GET_ON_BOARD, Fuente.REMOTE_OK);
-        assertThat(fin.omitidas()).singleElement().satisfies(o -> {
+        assertThat(omitidasDelServidor(fin)).singleElement().satisfies(o -> {
             assertThat(o.fuente()).isEqualTo(Fuente.REMOTIVE);
             assertThat(o.motivo()).isEqualTo(MotivoOmision.PAUSADA);
         });
@@ -124,13 +124,13 @@ class ConexionesTest extends PruebaOfertas {
         RecoleccionResponse aceptada = lanzar(null);
 
         assertThat(aceptada.total()).isEqualTo(2);
-        assertThat(aceptada.omitidas()).singleElement().satisfies(o -> {
+        assertThat(omitidasDelServidor(aceptada)).singleElement().satisfies(o -> {
             assertThat(o.fuente()).isEqualTo(Fuente.REMOTE_OK);
             assertThat(o.motivo()).isEqualTo(MotivoOmision.PAUSADA);
         });
         RecoleccionResponse fin = esperarFin();
         assertThat(fin.estado()).isEqualTo(EstadoRecoleccion.TERMINADA);
-        assertThat(fin.omitidas()).hasSize(1);
+        assertThat(omitidasDelServidor(fin)).hasSize(1);
         assertThat(FUENTES.lecturas(Fuente.REMOTE_OK)).isZero();
         assertThat(FUENTES.lecturas(Fuente.REMOTIVE)).isEqualTo(1);
     }
@@ -166,7 +166,9 @@ class ConexionesTest extends PruebaOfertas {
         recoleccion.recoger();
 
         for (Fuente fuente : Fuente.values()) {
-            assertThat(FUENTES.lecturas(fuente)).as(fuente.nombre()).isZero();
+            if (!fuente.desdeMaquina()) {
+                assertThat(FUENTES.lecturas(fuente)).as(fuente.nombre()).isZero();
+            }
         }
         assertThat(avance()).as("ni el general ni la programada lanzaron nada").isEqualTo(antes);
     }

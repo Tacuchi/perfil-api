@@ -19,7 +19,8 @@ import org.springframework.boot.SpringApplication;
 /**
  * Arranque local para recorrer panel y API juntos: `./mvnw spring-boot:test-run`.
  * La identidad pasa por la misma verificación que en producción, con claves de prueba publicadas en local;
- * el código firmado queda en target/codigo-local.jwt para que el proxy del panel lo envíe.
+ * el código firmado queda en target/codigo-local.jwt para que el proxy del panel lo envíe, y el del token de servicio
+ * del lector en target/codigo-lector-local.jwt.
  * Las ofertas van a un PostgreSQL de pruebas, las tres fuentes se sirven desde sus respuestas guardadas y el
  * correo diario llega a un servidor de correo de prueba. Los mandos del recorrido viven en /api/local.
  * Solo existe en el classpath de pruebas: nada de esto entra al jar.
@@ -27,6 +28,8 @@ import org.springframework.boot.SpringApplication;
 public final class PerfilApiLocal {
 
     static final Path ARCHIVO_CODIGO = Path.of("target", "codigo-local.jwt");
+    /** Código del token de servicio del lector, para correr el lector contra la API local. */
+    static final Path ARCHIVO_CODIGO_LECTOR = Path.of("target", "codigo-lector-local.jwt");
     static final String ORIGEN_PANEL_LOCAL = "http://localhost:4200";
 
     private PerfilApiLocal() {
@@ -40,6 +43,7 @@ public final class PerfilApiLocal {
         correo.start();
         Files.createDirectories(ARCHIVO_CODIGO.getParent());
         Files.writeString(ARCHIVO_CODIGO, access.codigoValido(Duration.ofHours(12)));
+        Files.writeString(ARCHIVO_CODIGO_LECTOR, access.codigoDelLector(Duration.ofHours(12)));
 
         List<String> argumentos = new ArrayList<>(List.of(
                 "--perfil.access.emisor=" + access.emisor(),
@@ -60,6 +64,7 @@ public final class PerfilApiLocal {
                 "--perfil.ofertas.remoteok-url=" + fuentes.url(Fuente.REMOTE_OK),
                 // La recolección se dispara con los mandos de /api/local, no por horario.
                 "--perfil.ofertas.cron=-",
+                "--perfil.lector.token-id=" + AccessDePrueba.TOKEN_LECTOR,
                 "--perfil.aviso.activo=true",
                 "--perfil.aviso.remitente=avisos@ejemplo.test",
                 "--spring.mail.host=127.0.0.1",

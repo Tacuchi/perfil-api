@@ -4,13 +4,13 @@ import java.util.List;
 import net.tacuchi.perfil.dto.FuenteOmitida;
 import net.tacuchi.perfil.model.MotivoOmision;
 
-/** Un lanzamiento a demanda que no se acepta. El mensaje es para la persona y no lleva detalle interno. */
+/** Un lanzamiento que no se acepta. El mensaje es para la persona y no lleva detalle interno. */
 public class RecoleccionRechazadaException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     public enum Motivo {
-        EN_CURSO, TOPE_DIARIO, PAUSADA, SIN_FUENTES
+        EN_CURSO, TOPE_DIARIO, PAUSADA, SIN_FUENTES, DESDE_MAQUINA
     }
 
     private final Motivo motivo;
@@ -28,20 +28,34 @@ public class RecoleccionRechazadaException extends RuntimeException {
     /** Una sola fuente pedida que no se puede leer ahora, con su motivo. */
     public static RecoleccionRechazadaException omitida(FuenteOmitida omitida, int tope) {
         return switch (omitida.motivo()) {
-            case TOPE_DIARIO -> new RecoleccionRechazadaException(Motivo.TOPE_DIARIO,
-                    omitida.nombre() + " ya recibió sus " + tope + " lecturas de hoy. Vuelve a intentarlo mañana.");
+            case TOPE_DIARIO -> new RecoleccionRechazadaException(Motivo.TOPE_DIARIO, omitida.nombre()
+                    + (tope == 1 ? " ya recibió su lectura de hoy." : " ya recibió sus " + tope + " lecturas de hoy.")
+                    + " Vuelve a intentarlo mañana.");
             case PAUSADA -> new RecoleccionRechazadaException(Motivo.PAUSADA,
                     omitida.nombre() + " está pausada. Reanúdala en Conexiones para leerla.");
+            case DESDE_MAQUINA -> new RecoleccionRechazadaException(Motivo.DESDE_MAQUINA,
+                    omitida.nombre() + " se lee desde tu máquina. Usa «Leer desde mi máquina» en Conexiones.");
         };
     }
 
-    /** Ninguna fuente del lanzamiento general se puede leer ahora. */
+    /**
+     * Ninguna fuente del lanzamiento general se puede leer ahora. Las conexiones de la máquina no cuentan: nunca se
+     * leen por esta vía.
+     */
     public static RecoleccionRechazadaException sinFuentes(List<FuenteOmitida> omitidas, int tope) {
-        boolean todasPorTope = omitidas.stream().allMatch(o -> o.motivo() == MotivoOmision.TOPE_DIARIO);
+        boolean todasPorTope = omitidas.stream()
+                .filter(o -> o.motivo() != MotivoOmision.DESDE_MAQUINA)
+                .allMatch(o -> o.motivo() == MotivoOmision.TOPE_DIARIO);
         return new RecoleccionRechazadaException(Motivo.SIN_FUENTES, todasPorTope
                 ? "Todas las fuentes ya recibieron sus " + tope + " lecturas de hoy. Vuelve a intentarlo mañana."
                 : "Ninguna conexión se puede leer ahora: están pausadas o ya recibieron sus " + tope
                         + " lecturas de hoy.");
+    }
+
+    /** Ninguna conexión de la máquina se puede leer ahora: la corrida local no se abre. */
+    public static RecoleccionRechazadaException sinConexionesDeMaquina() {
+        return new RecoleccionRechazadaException(Motivo.SIN_FUENTES,
+                "Ninguna conexión de tu máquina se puede leer ahora: están pausadas o ya recibieron sus lecturas de hoy.");
     }
 
     public Motivo getMotivo() {

@@ -23,7 +23,8 @@ public record PerfilProperties(
         @Valid @DefaultValue Sitio sitio,
         @Valid @DefaultValue Panel panel,
         @Valid @DefaultValue Ofertas ofertas,
-        @Valid @DefaultValue Aviso aviso) {
+        @Valid @DefaultValue Aviso aviso,
+        @Valid @DefaultValue Lector lector) {
 
     private static final String URL = "https?://\\S+";
     private static final String URL_INVALIDA = "debe ser una URL http(s)";
@@ -64,6 +65,14 @@ public record PerfilProperties(
             @NotBlank @Pattern(regexp = URL, message = URL_INVALIDA) String remotiveUrl,
             @NotBlank @Pattern(regexp = URL, message = URL_INVALIDA) String remoteokUrl,
             @NotBlank String cron) {
+    }
+
+    /**
+     * Lector de la máquina de la persona: entra con un token de servicio de Cloudflare Access. Solo llega el
+     * identificador del token (su {@code common_name}), nunca su secreto. {@code aud} es la aplicación de Access que
+     * protege las rutas del lector; sin ella, la del panel. Sin identificador, la API arranca y rechaza toda entrega.
+     */
+    public record Lector(String tokenId, String aud) {
     }
 
     /**

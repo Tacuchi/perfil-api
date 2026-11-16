@@ -10,8 +10,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import net.tacuchi.perfil.dto.CorridaLectorResponse;
+import net.tacuchi.perfil.dto.EntregaRequest;
+import net.tacuchi.perfil.dto.RecoleccionResponse;
+import net.tacuchi.perfil.exception.RecoleccionRechazadaException;
+import net.tacuchi.perfil.model.FalloMaquina;
 import net.tacuchi.perfil.model.Fuente;
+import net.tacuchi.perfil.service.CorridaLocalService;
 import net.tacuchi.perfil.service.RecoleccionService;
+import net.tacuchi.perfil.soporte.EntregasDePrueba;
 import net.tacuchi.perfil.soporte.FuentesDePrueba;
 import net.tacuchi.perfil.soporte.RelojDePrueba;
 import org.springframework.boot.test.context.TestComponent;
@@ -25,8 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Mandos del arranque local para recorrer el monitor de ofertas: recoger ahora, disparar la programada sin
- * esperarla, pasar al día siguiente, hacer que una fuente falle, bloquee o quede en pausa y ver los correos
- * recibidos. Solo existe en el classpath de pruebas
+ * esperarla, pasar al día siguiente, hacer que una fuente falle, bloquee o quede en pausa, recorrer una corrida
+ * local sin el lector real y ver los correos recibidos. Solo existe en el classpath de pruebas
  * y solo se registra en el arranque local; pasa por la misma identificación que el resto de /api.
  */
 @TestComponent
@@ -39,6 +46,10 @@ public class ControlLocal {
     private final RelojDePrueba reloj;
     private final FuentesDePrueba fuentes;
     private final GreenMail correo;
+    private final CorridaLocalService corridaLocal;
+
+    /** Lo que el lector simulado entrega de cada conexión de la máquina. */
+    public enum Resultado { AVISOS, SIN_SESION, VERIFICACION, RITMO, VACIA }
 
     @PostMapping("/recoger")
     public Map<String, Object> recoger() {
@@ -75,6 +86,30 @@ public class ControlLocal {
             fuentes.soltar(fuente);
         }
         return Map.of("fuente", fuente, "pausa", fuentes.enPausa(fuente));
+    }
+
+    /**
+     * Hace de lector: recorre la corrida abierta con ese código (o abre una, si no llega código) y entrega el mismo
+     * resultado por cada conexión de la máquina. Una conexión que la API manda no leer se salta.
+     */
+    @PostMapping("/lector")
+    public RecoleccionResponse lector(@RequestParam(required = false) String codigo,
+            @RequestParam(defaultValue = "AVISOS") Resultado resultado, @RequestParam(defaultValue = "3") int avisos) {
+        String corrida = codigo != null ? codigo : corridaLocal.abrir().codigo();
+        CorridaLectorResponse aLeer = corridaLocal.iniciar(corrida);
+        for (CorridaLectorResponse.FuenteALeer fuente : aLeer.fuentes()) {
+            try {
+                corridaLocal.empezar(corrida, fuente.fuente());
+            } catch (RecoleccionRechazadaException e) {
+                continue;
+            }
+            EntregaRequest entrega = resultado == Resultado.AVISOS
+                    ? new EntregaRequest(corrida, EntregasDePrueba.avisos("local-" + reloj.millis(),
+                            Math.min(avisos, fuente.avisosMaximos()), reloj.instant()), null)
+                    : new EntregaRequest(corrida, null, FalloMaquina.valueOf(resultado.name()));
+            corridaLocal.entregar(corrida, fuente.fuente(), entrega);
+        }
+        return corridaLocal.terminar(corrida);
     }
 
     @GetMapping("/correos")

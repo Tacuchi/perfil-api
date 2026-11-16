@@ -72,6 +72,16 @@ public class ManejadorErrores {
         return problema;
     }
 
+    /** Un código que no abre ninguna corrida es 403; un paso fuera de orden, 409. */
+    @ExceptionHandler(CorridaRechazadaException.class)
+    ProblemDetail corridaRechazada(CorridaRechazadaException ex) {
+        HttpStatus estado = ex.getMotivo() == CorridaRechazadaException.Motivo.CODIGO
+                ? HttpStatus.FORBIDDEN : HttpStatus.CONFLICT;
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(estado, ex.getMessage());
+        problema.setProperty("motivo", ex.getMotivo().name());
+        return problema;
+    }
+
     /** Un cuerpo ilegible o con un valor fuera de catálogo: se dice qué se esperaba, sin el texto interno. */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ProblemDetail cuerpoIlegible(HttpMessageNotReadableException ex) {

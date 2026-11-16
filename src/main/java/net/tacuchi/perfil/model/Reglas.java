@@ -18,6 +18,12 @@ public final class Reglas {
     public static final int TOPE_LECTURAS_DIA = 3;
     /** La recolección programada lee una vez al día cada fuente que ese día aún no tiene lecturas. */
     public static final int LECTURAS_PROGRAMADAS_DIA = 1;
+    /** Avisos que admite cada entrega del lector de la máquina: llega cortada, nunca es una lectura completa. */
+    public static final int TOPE_AVISOS_ENTREGA = 25;
+    /** Plazo para que el lector inicie la corrida que la persona abrió desde el panel. */
+    public static final Duration PLAZO_REPORTE_LECTOR = Duration.ofMinutes(2);
+    /** Plazo total de una corrida local, con la espera del inicio de sesión incluida. */
+    public static final Duration PLAZO_CORRIDA_LOCAL = Duration.ofMinutes(15);
     /** Tope de ofertas que devuelve una lista. */
     public static final int TOPE_LISTA_OFERTAS = 500;
 

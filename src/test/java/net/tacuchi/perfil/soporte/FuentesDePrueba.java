@@ -66,6 +66,7 @@ public final class FuentesDePrueba {
             case GET_ON_BOARD -> base + "/getonbrd";
             case REMOTIVE -> base + "/remotive";
             case REMOTE_OK -> base + "/remoteok";
+            case LINKEDIN -> throw new IllegalArgumentException(fuente + " no se lee desde el servidor");
         };
     }
 

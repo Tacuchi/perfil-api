@@ -26,6 +26,9 @@ class RecoleccionTest extends PruebaOfertas {
         recoleccion.recoger();
 
         for (Fuente fuente : Fuente.values()) {
+            if (fuente.desdeMaquina()) {
+                continue;
+            }
             List<OfertaResponse> ofertas = lista("?encaje=ALTO,MEDIO,NO_ENCAJA&fuente=" + fuente.name());
             assertThat(ofertas).as(fuente.nombre()).isNotEmpty().allSatisfy(o -> {
                 assertThat(o.titulo()).isNotBlank();
@@ -40,7 +43,7 @@ class RecoleccionTest extends PruebaOfertas {
         assertThat(lista("?encaje=ALTO,MEDIO,NO_ENCAJA&fuente=REMOTIVE")).hasSize(4);
         assertThat(lista("?encaje=ALTO,MEDIO,NO_ENCAJA&fuente=REMOTE_OK")).hasSize(4);
         assertThat(lista("?encaje=ALTO,MEDIO,NO_ENCAJA&fuente=GET_ON_BOARD")).hasSize(6);
-        assertThat(fuentes()).allSatisfy(f -> assertThat(f.estado()).isEqualTo(EstadoLectura.CORRECTA));
+        assertThat(fuentesDelServidor()).allSatisfy(f -> assertThat(f.estado()).isEqualTo(EstadoLectura.CORRECTA));
     }
 
     @Test

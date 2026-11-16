@@ -103,7 +103,7 @@ class TopeDiarioTest extends PruebaOfertas {
 
     @Test
     void unaFuenteNuncaLeidaTieneSusTresLecturas() {
-        assertThat(fuentes()).allSatisfy(f -> {
+        assertThat(fuentesDelServidor()).allSatisfy(f -> {
             assertThat(f.estado()).isEqualTo(EstadoLectura.SIN_LEER);
             assertThat(f.lecturasRestantes()).isEqualTo(3);
         });
