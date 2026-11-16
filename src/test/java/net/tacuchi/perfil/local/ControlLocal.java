@@ -84,7 +84,24 @@ public class ControlLocal {
     /** Cuántas consultas recibió el doble de Apify desde que arrancó la API local. */
     @GetMapping("/apify")
     public Map<String, Object> apify() {
-        return Map.of("consultas", apify.consultas());
+        return Map.of("consultas", apify.consultas(), "lanzamientos", Map.of(
+                "LINKEDIN", apify.lanzamientos(ApifyDePrueba.LINKEDIN),
+                "BUMERAN", apify.lanzamientos(ApifyDePrueba.BUMERAN),
+                "COMPUTRABAJO", apify.lanzamientos(ApifyDePrueba.ACTOR)));
+    }
+
+    @PutMapping("/apify/{fuente}")
+    public Map<String, Object> modoApify(@PathVariable Fuente fuente, @RequestParam ApifyDePrueba.Modo modo,
+            @RequestParam(defaultValue = "*") String termino,
+            @RequestParam(defaultValue = "Peru") String ambito) {
+        String actor = switch (fuente) {
+            case LINKEDIN -> ApifyDePrueba.LINKEDIN;
+            case BUMERAN -> ApifyDePrueba.BUMERAN;
+            case COMPUTRABAJO -> ApifyDePrueba.ACTOR;
+            default -> throw new IllegalArgumentException("la fuente debe usar Apify");
+        };
+        apify.modo(actor, ambito, termino, modo);
+        return Map.of("fuente", fuente, "modo", modo);
     }
 
     @PutMapping("/fuentes/{fuente}")

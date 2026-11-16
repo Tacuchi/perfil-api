@@ -20,13 +20,14 @@ public class ConexionesPago {
     private final ConsumoRepository consumoRepository;
     private final CifradoClaves cifrado;
     private final Clock clock;
+    private final ClaveApify clave;
 
     /** Por qué no se lee ahora; vacío si se puede leer. Siempre vacío para las que no son de pago. */
     public Optional<MotivoOmision> impedimento(Fuente fuente) {
         if (!fuente.dePago()) {
             return Optional.empty();
         }
-        Conexion conexion = conexionRepository.buscar(fuente);
+        Conexion conexion = clave.proyectar(conexionRepository.buscar(fuente));
         if (conexion.queFalta(cifrado.disponible()).isPresent()) {
             return Optional.of(MotivoOmision.FALTA_CONFIGURAR);
         }

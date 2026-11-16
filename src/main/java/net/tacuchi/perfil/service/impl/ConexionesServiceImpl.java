@@ -37,6 +37,7 @@ public class ConexionesServiceImpl implements ConexionesService {
     private final ConexionesPago conexionesPago;
     private final CifradoClaves cifrado;
     private final Clock clock;
+    private final net.tacuchi.perfil.service.ClaveApify claveApify;
 
     @Override
     @Transactional(readOnly = true)
@@ -49,7 +50,7 @@ public class ConexionesServiceImpl implements ConexionesService {
         boolean llave = cifrado.disponible();
         return Arrays.stream(Fuente.values())
                 .map(fuente -> respuesta(fuente, lecturas.get(fuente), deHoy.getOrDefault(fuente, 0),
-                        conexiones.get(fuente), hoy, llave,
+                        fuente.dePago() ? claveApify.proyectar(conexiones.get(fuente)) : conexiones.get(fuente), hoy, llave,
                         fuente.dePago() ? conexionesPago.consumoDelMes(fuente) : BigDecimal.ZERO))
                 .toList();
     }
@@ -77,7 +78,7 @@ public class ConexionesServiceImpl implements ConexionesService {
         if (!cifrado.disponible()) {
             throw ConfiguracionRechazadaException.faltaLlave();
         }
-        conexionRepository.guardarClave(fuente, cifrado.cifrar(fuente, clave.strip()), clock.instant());
+        claveApify.guardar(clave);
         log.info("[CONEXIONES] {}: clave cargada", fuente.nombre());
         return de(fuente);
     }
@@ -120,6 +121,6 @@ public class ConexionesServiceImpl implements ConexionesService {
                 conexion.claveCargadaEn(),
                 pago ? conexion.topeMensual() : null,
                 pago ? consumoMes : null,
-                conexion.queFalta(llave).orElse(null));
+                conexion.queFalta(llave).orElse(null), leida && lectura.estado().parcial(lectura.detalle()));
     }
 }

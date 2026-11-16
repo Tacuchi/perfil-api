@@ -1,0 +1,26 @@
+[
+  {
+    "jobId": "dd8a93266a4ad810ecf7cb458fd97946b84ac4f0dbab54d77e9591f3916efe39",
+    "canonicalUrl": "https://www.bumeran.com.pe/empleos/ingeniero-de-produccion-sistema-aporticado-overall-strategy-s.a.c.-1118631884.html",
+    "portalUrl": "https://www.bumeran.com.pe/empleos/ingeniero-de-produccion-sistema-aporticado-overall-strategy-s.a.c.-1118631884.html",
+    "title": "Desarrollador Java junior",
+    "company": "Empresa de prueba",
+    "location": "Lima, Lima",
+    "postedDate": "2026-11-15T13:30:39",
+    "workModality": "Presencial",
+    "seniorityLevel": "Senior",
+    "description": "Desarrollo de software con Java y Spring Boot. Trabajo en equipo."
+  },
+  {
+    "jobId": "cebe498af93d83caa8b4dbe3d30c8327205b96c1e31a2b39ca9dc754512c7589",
+    "canonicalUrl": "https://www.bumeran.com.pe/empleos/analista-programador-junior-zoluxiones-sac-1118631833.html",
+    "portalUrl": "https://www.bumeran.com.pe/empleos/analista-programador-junior-zoluxiones-sac-1118631833.html",
+    "title": "Programador full stack",
+    "company": "Empresa de prueba",
+    "location": "Villa El Salvador, Lima",
+    "postedDate": "2026-11-15T08:35:01",
+    "workModality": "Híbrido",
+    "seniorityLevel": "Junior",
+    "description": "Desarrollo de software con Java y Spring Boot. Trabajo en equipo."
+  }
+]

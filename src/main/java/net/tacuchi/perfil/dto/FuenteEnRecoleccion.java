@@ -12,17 +12,22 @@ public record FuenteEnRecoleccion(
         String nombre,
         PasoFuente paso,
         EstadoLectura resultado,
-        Integer ofertasLeidas) {
+        Integer ofertasLeidas, java.math.BigDecimal costoUsd, String detalle, boolean parcial) {
 
     public static FuenteEnRecoleccion pendiente(Fuente fuente) {
-        return new FuenteEnRecoleccion(fuente, fuente.nombre(), PasoFuente.PENDIENTE, null, null);
+        return new FuenteEnRecoleccion(fuente, fuente.nombre(), PasoFuente.PENDIENTE, null, null, null, null, false);
     }
 
     public FuenteEnRecoleccion leyendo() {
-        return new FuenteEnRecoleccion(fuente, nombre, PasoFuente.LEYENDO, null, null);
+        return new FuenteEnRecoleccion(fuente, nombre, PasoFuente.LEYENDO, null, null, null, null, false);
     }
 
     public FuenteEnRecoleccion terminada(EstadoLectura resultadoLectura, int ofertas) {
-        return new FuenteEnRecoleccion(fuente, nombre, PasoFuente.TERMINADA, resultadoLectura, ofertas);
+        return terminada(resultadoLectura, ofertas, null, null);
+    }
+
+    public FuenteEnRecoleccion terminada(EstadoLectura resultadoLectura, int ofertas,
+            java.math.BigDecimal costoUsd, String detalle) {
+        return new FuenteEnRecoleccion(fuente, nombre, PasoFuente.TERMINADA, resultadoLectura, ofertas, costoUsd, detalle, resultadoLectura.parcial(detalle));
     }
 }

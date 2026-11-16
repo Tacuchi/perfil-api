@@ -32,6 +32,8 @@ public final class ApifyDePrueba {
 
     /** Una clave inventada: ninguna clave real pasa por las pruebas. */
     public static final String CLAVE = "clave-de-prueba";
+    public static final String LINKEDIN = "valig~linkedin-jobs-scraper";
+    public static final String BUMERAN = "blackfalcondata~bumeran-scraper";
     public static final String ACTOR = "santamaria-automations~computrabajo-scraper";
     public static final BigDecimal PRECIO_ARRANQUE = new BigDecimal("0.001");
     public static final BigDecimal PRECIO_AVISO = new BigDecimal("0.003");
@@ -39,7 +41,7 @@ public final class ApifyDePrueba {
     private static final String EVENTO_AVISO = "apify-default-dataset-item";
 
     /** TERMINA: la corrida acaba dentro de la espera del lanzamiento; TARDA: acaba en la primera consulta. */
-    public enum Modo { TERMINA, TARDA, FALLA }
+    public enum Modo { TERMINA, TARDA, FALLA, VACIA, NO_TERMINA, HTTP401, HTTP429, JSON_INVALIDO, SIN_PRECIO, SIN_COSTO }
 
     /** Una petición tal como llegó: sin la clave, solo si traía la correcta. */
     public record Peticion(String metodo, String ruta, Map<String, String> parametros, boolean conClave,
@@ -52,12 +54,16 @@ public final class ApifyDePrueba {
     private final JsonNode precios;
     private final List<Peticion> peticiones = new CopyOnWriteArrayList<>();
     private final Map<String, Corrida> corridas = new ConcurrentHashMap<>();
+    private final Map<String, Modo> modos = new ConcurrentHashMap<>();
+    private final Map<String, JsonNode> muestras = new HashMap<>();
     private final AtomicInteger secuencia = new AtomicInteger();
     private volatile Modo modo;
     private volatile int consultasParaAsentar;
 
     public ApifyDePrueba() {
         avisos = json.readTree(FuentesDePrueba.guardada("apify-computrabajo.json"));
+        muestras.put(LINKEDIN, json.readTree(FuentesDePrueba.guardada("apify-linkedin.json")));
+        muestras.put(BUMERAN, json.readTree(FuentesDePrueba.guardada("apify-bumeran.json")));
         precios = json.readTree(FuentesDePrueba.guardada("apify-corrida.json")).path("pricingInfo");
         try {
             servidor = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -76,9 +82,19 @@ public final class ApifyDePrueba {
 
     public void reiniciar() {
         peticiones.clear();
+        modos.clear();
         corridas.clear();
         modo = Modo.TERMINA;
         consultasParaAsentar = 1;
+    }
+
+    public void modo(String actor, String ambito, String termino, Modo nuevo) {
+        modos.put(actor + "|" + ambito + "|" + termino, nuevo);
+    }
+
+    public long lanzamientos(String actor) {
+        return peticiones.stream().filter(p -> p.metodo().equals("POST")
+                && p.ruta().equals("/v2/acts/" + actor + "/runs")).count();
     }
 
     public void modo(Modo nuevo) {
@@ -123,8 +139,8 @@ public final class ApifyDePrueba {
             error(intercambio, 401, "user-or-token-not-found", "User was not found or authentication token is not valid");
             return;
         }
-        if ("POST".equals(intercambio.getRequestMethod()) && ruta.equals("/v2/acts/" + ACTOR + "/runs")) {
-            lanzar(intercambio, parametros, cuerpo);
+        if ("POST".equals(intercambio.getRequestMethod()) && List.of(ACTOR, LINKEDIN, BUMERAN).stream().anyMatch(a -> ruta.equals("/v2/acts/" + a + "/runs"))) {
+            lanzar(intercambio, parametros, cuerpo, ruta.substring("/v2/acts/".length(), ruta.length() - "/runs".length()));
         } else if ("GET".equals(intercambio.getRequestMethod()) && ruta.startsWith("/v2/actor-runs/")) {
             consultar(intercambio, ruta.substring("/v2/actor-runs/".length()));
         } else if ("GET".equals(intercambio.getRequestMethod()) && ruta.startsWith("/v2/datasets/")
@@ -135,7 +151,7 @@ public final class ApifyDePrueba {
         }
     }
 
-    private void lanzar(HttpExchange intercambio, Map<String, String> parametros, JsonNode entrada) throws IOException {
+    private void lanzar(HttpExchange intercambio, Map<String, String> parametros, JsonNode entrada, String actor) throws IOException {
         BigDecimal gastoMaximo;
         int maxAvisos;
         try {
@@ -145,22 +161,57 @@ public final class ApifyDePrueba {
             error(intercambio, 400, "invalid-input", "maxTotalChargeUsd y maxItems son obligatorios en esta prueba");
             return;
         }
-        if (entrada == null || !entrada.path("searchQueries").isArray() || entrada.path("searchQueries").isEmpty()
-                || !"pe".equals(entrada.path("country").asString(""))) {
+        if (!entradaValida(actor, entrada, maxAvisos) || parametros.containsKey("token")
+                || intercambio.getRequestHeaders().containsKey("Cookie") || gastoMaximo.signum() <= 0) {
             error(intercambio, 400, "invalid-input", "Input is not valid");
             return;
         }
-        int porGasto = gastoMaximo.compareTo(PRECIO_ARRANQUE) < 0 ? 0
-                : gastoMaximo.subtract(PRECIO_ARRANQUE).divide(PRECIO_AVISO, 0, RoundingMode.DOWN).intValue();
-        int entregados = Math.min(Math.min(avisos.size(), maxAvisos),
-                Math.min(entrada.path("maxResults").asInt(avisos.size()), porGasto));
-        if (modo == Modo.FALLA) {
-            entregados = 0;
+        String ambito = actor.equals(LINKEDIN) ? entrada.path("location").asString("") : "PE";
+        String termino = entrada.path(actor.equals(LINKEDIN) ? "keywords" : "query").asString("");
+        Modo actual = modos.getOrDefault(actor + "|" + ambito + "|" + termino,
+                modos.getOrDefault(actor + "|" + ambito + "|*", modo));
+        if (actual == Modo.HTTP401 || actual == Modo.HTTP429) {
+            error(intercambio, actual == Modo.HTTP401 ? 401 : 429, "rechazo", "Servicio de prueba");
+            return;
         }
+        BigDecimal arranque = actor.equals(BUMERAN) ? new BigDecimal("0.0005") : PRECIO_ARRANQUE;
+        BigDecimal precio = actor.equals(LINKEDIN) ? new BigDecimal("0.0004")
+                : actor.equals(BUMERAN) ? new BigDecimal("0.001") : PRECIO_AVISO;
+        JsonNode muestra = muestras.getOrDefault(actor, avisos);
+        int porGasto = gastoMaximo.compareTo(arranque) < 0 ? 0
+                : gastoMaximo.subtract(arranque).divide(precio, 0, RoundingMode.DOWN).intValue();
+        int entregados = Math.min(Math.min(muestra.size(), maxAvisos), porGasto);
+        if (actual == Modo.FALLA || actual == Modo.VACIA) { entregados = 0; }
         int numero = secuencia.incrementAndGet();
-        Corrida corrida = new Corrida("corrida" + numero, "avisos" + numero, entregados, gastoMaximo, maxAvisos);
+        Corrida corrida = new Corrida("corrida" + numero, "avisos" + numero, entregados, gastoMaximo, maxAvisos,
+                new AtomicInteger(), actor, actual, arranque, precio, muestra);
         corridas.put(corrida.id, corrida);
-        escribir(intercambio, 201, sobre(corrida, modo == Modo.TARDA ? "RUNNING" : terminada()));
+        escribir(intercambio, 201, sobre(corrida,
+                actual == Modo.TARDA || actual == Modo.NO_TERMINA ? "RUNNING" : terminada(corrida)));
+    }
+
+    private static boolean entradaValida(String actor, JsonNode entrada, int maxAvisos) {
+        if (entrada == null) { return false; }
+        if (actor.equals(ACTOR)) {
+            return entrada.path("searchQueries").isArray() && !entrada.path("searchQueries").isEmpty()
+                    && "pe".equals(entrada.path("country").asString(""));
+        }
+        if (actor.equals(LINKEDIN)) {
+            boolean remoto = "Latin America".equals(entrada.path("location").asString(""));
+            return entrada.size() == (remoto ? 5 : 4) && !entrada.path("keywords").asString("").isBlank()
+                    && "r604800".equals(entrada.path("datePosted").asString(""))
+                    && entrada.path("limit").asInt() == maxAvisos
+                    && (remoto ? entrada.path("urlParam").size() == 1
+                        && "f_WT".equals(entrada.path("urlParam").path(0).path("key").asString(""))
+                        && "2".equals(entrada.path("urlParam").path(0).path("value").asString(""))
+                        : "Peru".equals(entrada.path("location").asString("")));
+        }
+        return entrada.size() == 6 && !entrada.path("query").asString("").isBlank()
+                && "PE".equals(entrada.path("country").asString(""))
+                && "RECIENTES".equals(entrada.path("sort").asString(""))
+                && entrada.path("maxResults").asInt() == maxAvisos
+                && entrada.path("includeDetails").asBoolean(false)
+                && "text".equals(entrada.path("descriptionFormat").asString(""));
     }
 
     private void consultar(HttpExchange intercambio, String id) throws IOException {
@@ -170,7 +221,7 @@ public final class ApifyDePrueba {
             return;
         }
         corrida.consultas.incrementAndGet();
-        escribir(intercambio, 200, sobre(corrida, terminada()));
+        escribir(intercambio, 200, sobre(corrida, terminada(corrida)));
     }
 
     private void servirAvisos(HttpExchange intercambio, String dataset) throws IOException {
@@ -181,13 +232,17 @@ public final class ApifyDePrueba {
         }
         ArrayNode lista = json.createArrayNode();
         for (int i = 0; i < corrida.entregados; i++) {
-            lista.add(avisos.get(i));
+            lista.add(corrida.muestra.get(i));
+        }
+        if (corrida.modo == Modo.JSON_INVALIDO) {
+            AccessDePrueba.escribir(intercambio, 200, "application/json", "invalido".getBytes(StandardCharsets.UTF_8));
+            return;
         }
         escribir(intercambio, 200, lista);
     }
 
-    private String terminada() {
-        return modo == Modo.FALLA ? "FAILED" : "SUCCEEDED";
+    private String terminada(Corrida corrida) {
+        return corrida.modo == Modo.NO_TERMINA ? "RUNNING" : corrida.modo == Modo.FALLA ? "FAILED" : "SUCCEEDED";
     }
 
     /** El objeto de la corrida con los campos reales de Apify; el costo, asentado o el de recién terminada. */
@@ -197,17 +252,26 @@ public final class ApifyDePrueba {
         int cobrados = asentada ? corrida.entregados : 0;
         ObjectNode datos = json.createObjectNode();
         datos.put("id", corrida.id);
-        datos.put("actId", ACTOR);
+        datos.put("actId", corrida.actor);
         datos.put("status", estado);
         datos.put("defaultDatasetId", corrida.dataset);
-        datos.put("usageTotalUsd", costo(cobrados).doubleValue());
+        if (corrida.modo != Modo.SIN_COSTO) {
+            datos.put("usageTotalUsd", corrida.arranque.add(corrida.precio.multiply(BigDecimal.valueOf(cobrados))));
+        }
         ObjectNode eventos = datos.putObject("chargedEventCounts");
         eventos.put(EVENTO_ARRANQUE, 1);
         eventos.put(EVENTO_AVISO, cobrados);
         ObjectNode opciones = datos.putObject("options");
         opciones.put("maxItems", corrida.maxAvisos);
         opciones.put("maxTotalChargeUsd", corrida.gastoMaximo.doubleValue());
-        datos.set("pricingInfo", precios);
+        if (corrida.modo != Modo.SIN_PRECIO && corrida.modo != Modo.SIN_COSTO) {
+            ObjectNode tarifa = (ObjectNode) precios.deepCopy();
+            var cargos = (ObjectNode) tarifa.path("pricingPerEvent").path("actorChargeEvents");
+            ((ObjectNode) cargos.path(EVENTO_ARRANQUE)).put("eventPriceUsd", corrida.arranque);
+            ((ObjectNode) cargos.path(EVENTO_AVISO)).put("eventPriceUsd", corrida.precio);
+            datos.set("pricingInfo", tarifa);
+        }
+        if (corrida.modo == Modo.SIN_COSTO) { datos.remove("chargedEventCounts"); }
         ObjectNode sobre = json.createObjectNode();
         sobre.set("data", datos);
         return sobre;
@@ -240,10 +304,5 @@ public final class ApifyDePrueba {
     }
 
     private record Corrida(String id, String dataset, int entregados, BigDecimal gastoMaximo, int maxAvisos,
-            AtomicInteger consultas) {
-
-        Corrida(String id, String dataset, int entregados, BigDecimal gastoMaximo, int maxAvisos) {
-            this(id, dataset, entregados, gastoMaximo, maxAvisos, new AtomicInteger());
-        }
-    }
+            AtomicInteger consultas, String actor, Modo modo, BigDecimal arranque, BigDecimal precio, JsonNode muestra) { }
 }

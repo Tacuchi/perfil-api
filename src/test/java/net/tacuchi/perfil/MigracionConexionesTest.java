@@ -42,7 +42,7 @@ class MigracionConexionesTest {
         }
         List<List<String>> antes = filas(esquema);
 
-        flyway(esquema).load().migrate();
+        flyway(esquema).target("3").load().migrate();
 
         assertThat(filas(esquema)).isEqualTo(antes);
         try (Connection conexion = conectar(esquema); Statement sql = conexion.createStatement()) {

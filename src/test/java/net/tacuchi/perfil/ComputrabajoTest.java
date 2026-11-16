@@ -41,6 +41,12 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  */
 class ComputrabajoTest extends PruebaOfertas {
 
+    @org.junit.jupiter.api.BeforeEach
+    void aislarOtrasConexionesDePago() {
+        postIdentificado("/api/fuentes/LINKEDIN/pausar").expectStatus().isOk();
+        postIdentificado("/api/fuentes/BUMERAN/pausar").expectStatus().isOk();
+    }
+
     private static final String RUTA = "/api/fuentes/COMPUTRABAJO";
 
     private RestTestClient.ResponseSpec put(String ruta, String json) {
@@ -197,7 +203,7 @@ class ComputrabajoTest extends PruebaOfertas {
         ApifyDePrueba.Peticion lanzamiento = APIFY.peticiones().getFirst();
         assertThat(lanzamiento.metodo()).isEqualTo("POST");
         assertThat(lanzamiento.ruta()).isEqualTo("/v2/acts/" + ApifyDePrueba.ACTOR + "/runs");
-        assertThat(lanzamiento.parametros()).containsEntry("maxTotalChargeUsd", "5.0000")
+        assertThat(lanzamiento.parametros()).containsEntry("maxTotalChargeUsd", "0.0760")
                 .containsEntry("maxItems", "25").doesNotContainValue(ApifyDePrueba.CLAVE);
         assertThat(lanzamiento.cuerpo().path("searchQueries")).hasSize(3);
         assertThat(lanzamiento.cuerpo().path("country").asString()).isEqualTo("pe");
@@ -259,7 +265,7 @@ class ComputrabajoTest extends PruebaOfertas {
         RecoleccionResponse fin = leerADemanda(Fuente.COMPUTRABAJO);
 
         assertThat(enAvance(fin, Fuente.COMPUTRABAJO).resultado()).isEqualTo(EstadoLectura.FALLO);
-        assertThat(computrabajo().detalle()).contains("FAILED");
+        assertThat(computrabajo().detalle()).contains("el servicio terminó con fallo");
         assertThat(computrabajo().consumoMes()).isEqualByComparingTo(ApifyDePrueba.PRECIO_ARRANQUE);
         assertThat(deComputrabajo()).isEmpty();
     }

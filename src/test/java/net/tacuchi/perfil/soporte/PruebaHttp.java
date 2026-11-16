@@ -70,6 +70,8 @@ public abstract class PruebaHttp {
         registro.add("perfil.lector.token-id", () -> AccessDePrueba.TOKEN_LECTOR);
         registro.add("perfil.claves.llave", () -> "${prueba.llave:" + LLAVE_DE_PRUEBA + "}");
         registro.add("perfil.computrabajo.url", APIFY::url);
+        registro.add("perfil.apify.linkedin.url", APIFY::url);
+        registro.add("perfil.apify.bumeran.url", APIFY::url);
         // El costo de una corrida de Apify se vuelve a consultar sin esperar los segundos reales.
         registro.add("perfil.computrabajo.plazo-costo", () -> "500ms");
         registro.add("perfil.computrabajo.pausa-consulta", () -> "20ms");

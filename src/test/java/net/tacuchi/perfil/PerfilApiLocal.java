@@ -71,6 +71,10 @@ public final class PerfilApiLocal {
                 "--perfil.lector.token-id=" + AccessDePrueba.TOKEN_LECTOR,
                 // Computrabajo contra el doble de Apify: su clave es ApifyDePrueba.CLAVE; la llave, una inventada.
                 "--perfil.computrabajo.url=" + apify.url(),
+                "--perfil.apify.linkedin.url=" + apify.url(),
+                "--perfil.apify.bumeran.url=" + apify.url(),
+                "--perfil.computrabajo.plazo-costo=500ms",
+                "--perfil.computrabajo.pausa-consulta=20ms",
                 "--perfil.claves.llave=" + PruebaHttp.LLAVE_DE_PRUEBA,
                 "--perfil.aviso.activo=true",
                 "--perfil.aviso.remitente=avisos@ejemplo.test",

@@ -8,8 +8,8 @@ public enum Fuente {
     GET_ON_BOARD("Get on Board", Via.SERVIDOR, Requisito.NADA, Reglas.TOPE_LECTURAS_DIA),
     REMOTIVE("Remotive", Via.SERVIDOR, Requisito.NADA, Reglas.TOPE_LECTURAS_DIA),
     REMOTE_OK("Remote OK", Via.SERVIDOR, Requisito.NADA, Reglas.TOPE_LECTURAS_DIA),
-    LINKEDIN("LinkedIn", Via.MAQUINA, Requisito.SESION, 1),
-    BUMERAN("Bumeran", Via.MAQUINA, Requisito.NADA, Reglas.TOPE_LECTURAS_DIA),
+    LINKEDIN("LinkedIn", Via.PAGO, Requisito.CLAVE, Reglas.SIN_TOPE_DIARIO),
+    BUMERAN("Bumeran", Via.PAGO, Requisito.CLAVE, Reglas.SIN_TOPE_DIARIO),
     COMPUTRABAJO("Computrabajo", Via.PAGO, Requisito.CLAVE, Reglas.SIN_TOPE_DIARIO);
 
     private final String nombre;

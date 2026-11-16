@@ -17,7 +17,8 @@ public record Conexion(
         Instant claveCargadaEn) {
 
     public static Conexion porDefecto(Fuente fuente) {
-        return new Conexion(fuente, false, null, null, null);
+        return new Conexion(fuente, false, null,
+                fuente == Fuente.LINKEDIN || fuente == Fuente.BUMERAN ? BigDecimal.ONE : null, null);
     }
 
     public static final String FALTA_LLAVE = "falta la llave de claves del servidor";

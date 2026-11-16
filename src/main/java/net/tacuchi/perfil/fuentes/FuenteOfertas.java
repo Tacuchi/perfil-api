@@ -19,6 +19,9 @@ public interface FuenteOfertas {
      * @param completa true si la lectura recorrió todo lo que la fuente publica: solo entonces lo que falta se
      *                 marca como «ya no publicada».
      */
-    record Lectura(List<OfertaRecogida> ofertas, boolean completa) {
+    record Lectura(List<OfertaRecogida> ofertas, boolean completa, java.math.BigDecimal costoUsd, String detalle) {
+        public Lectura(List<OfertaRecogida> ofertas, boolean completa) {
+            this(ofertas, completa, null, null);
+        }
     }
 }

@@ -37,5 +37,6 @@ public record FuenteResponse(
         Instant claveCargadaEn,
         BigDecimal topeMensual,
         BigDecimal consumoMes,
-        String queFalta) {
+        String queFalta,
+        boolean parcial) {
 }

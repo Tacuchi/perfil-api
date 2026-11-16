@@ -22,6 +22,20 @@ public final class Ubicaciones {
         return ADMITE_PERU.matcher(texto).find();
     }
 
+    /** Los avisos de las fuentes de Perú comparten las mismas reglas de ciudad y modalidad. */
+    public static Boolean admiteEnPeru(net.tacuchi.perfil.model.Modalidad modalidad, String ubicacion) {
+        return switch (modalidad) {
+            case REMOTO -> Boolean.TRUE;
+            case HIBRIDO, PRESENCIAL -> enLima(ubicacion);
+            case NO_INFORMA -> null;
+        };
+    }
+
+    /** Una ubicación que declara Perú confirma el país; otro país nunca confirma elegibilidad. */
+    public static boolean declaraPeru(String ubicacion) {
+        return Pattern.compile("(?<![a-z])peru(?![a-z])").matcher(Texto.normalizar(ubicacion)).find();
+    }
+
     /** Si un trabajo híbrido o presencial es en Lima: null cuando no dice dónde. */
     public static Boolean enLima(String ubicacion) {
         String texto = Texto.normalizar(ubicacion);

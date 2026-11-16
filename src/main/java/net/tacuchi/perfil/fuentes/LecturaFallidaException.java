@@ -8,6 +8,14 @@ public class LecturaFallidaException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     private final EstadoLectura estado;
+    private java.math.BigDecimal costoUsd;
+
+    public java.math.BigDecimal getCostoUsd() { return costoUsd; }
+
+    public LecturaFallidaException(EstadoLectura estado, String detalle, java.math.BigDecimal costoUsd) {
+        this(estado, detalle);
+        this.costoUsd = costoUsd;
+    }
 
     public LecturaFallidaException(EstadoLectura estado, String detalle) {
         super(detalle);

@@ -38,7 +38,8 @@ public class RecoleccionRechazadaException extends RuntimeException {
             case FALTA_CONFIGURAR -> new RecoleccionRechazadaException(Motivo.FALTA_CONFIGURAR,
                     omitida.nombre() + " no está configurada. Completa lo que le falta en Conexiones para leerla.");
             case TOPE_MENSUAL -> new RecoleccionRechazadaException(Motivo.TOPE_MENSUAL,
-                    omitida.nombre() + " llegó a su tope del mes. Súbelo en Conexiones o espera al mes siguiente.");
+                    omitida.nombre() + " llegó a su tope del mes: gastado " + omitida.gastado()
+                            + " USD, tope " + omitida.topeMensual() + " USD. Súbelo en Conexiones o espera al mes siguiente.");
         };
     }
 

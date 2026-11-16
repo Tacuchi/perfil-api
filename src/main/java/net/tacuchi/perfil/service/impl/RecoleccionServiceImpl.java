@@ -111,7 +111,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         for (FuenteOfertas fuente : fuentes) {
             Optional<MotivoOmision> impedimento = impedimento(fuente.fuente(), pausadas);
             if (impedimento.isPresent()) {
-                omitidas.add(FuenteOmitida.de(fuente.fuente(), impedimento.get()));
+                omitidas.add(omision(fuente.fuente(), impedimento.get()));
             } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, Reglas.LECTURAS_PROGRAMADAS_DIA)) {
                 lanzadas.add(fuente);
             }
@@ -161,7 +161,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
             for (FuenteOfertas fuente : pedidas) {
                 Optional<MotivoOmision> impedimento = impedimento(fuente.fuente(), pausadas);
                 if (impedimento.isPresent()) {
-                    omitidas.add(FuenteOmitida.de(fuente.fuente(), impedimento.get()));
+                    omitidas.add(omision(fuente.fuente(), impedimento.get()));
                 } else if (lecturaDiaRepository.reservar(fuente.fuente(), hoy, topeDelDia(fuente.fuente()))) {
                     lanzadas.add(fuente);
                 } else {
@@ -195,7 +195,7 @@ public class RecoleccionServiceImpl implements RecoleccionService {
                 candado.cambiar(a -> a.conFuente(fuente.fuente(), FuenteEnRecoleccion::leyendo));
                 Resultado resultado = leer(fuente, inicio);
                 candado.cambiar(a -> a.conFuente(fuente.fuente(),
-                        f -> f.terminada(resultado.estado(), resultado.ofertas())));
+                        f -> f.terminada(resultado.estado(), resultado.ofertas(), resultado.costoUsd(), resultado.detalle())));
             }
             int eliminadas = ofertaRepository.eliminarVistasAntesDe(inicio.minus(Reglas.CONSERVACION_OFERTAS));
             if (eliminadas > 0) {
@@ -214,19 +214,25 @@ public class RecoleccionServiceImpl implements RecoleccionService {
             FuenteOfertas.Lectura lectura = fuente.leer();
             registro.registrar(fuente.fuente(), lectura, inicio);
             int leidas = lectura.ofertas().size();
-            fuenteRepository.registrar(fuente.fuente(), EstadoLectura.CORRECTA, null, inicio, leidas);
+            fuenteRepository.registrar(fuente.fuente(), EstadoLectura.CORRECTA, lectura.detalle(), inicio, leidas);
             log.info("[OFERTAS] {}: {} ofertas leídas", fuente.fuente().nombre(), leidas);
-            return new Resultado(EstadoLectura.CORRECTA, leidas);
+            return new Resultado(EstadoLectura.CORRECTA, leidas, lectura.costoUsd(), lectura.detalle());
         } catch (LecturaFallidaException e) {
             fuenteRepository.registrar(fuente.fuente(), e.getEstado(), e.getMessage(), inicio, 0);
             log.warn("[OFERTAS] {}: {} — {}", fuente.fuente().nombre(), e.getEstado(), e.getMessage());
-            return new Resultado(e.getEstado(), 0);
+            return new Resultado(e.getEstado(), 0, e.getCostoUsd(), e.getMessage());
         } catch (RuntimeException e) {
             fuenteRepository.registrar(fuente.fuente(), EstadoLectura.FALLO, "no se pudo procesar la respuesta",
                     inicio, 0);
             log.error("[OFERTAS] {}: fallo al procesar la lectura", fuente.fuente().nombre(), e);
-            return new Resultado(EstadoLectura.FALLO, 0);
+            return new Resultado(EstadoLectura.FALLO, 0, null, "no se pudo procesar la respuesta");
         }
+    }
+
+    private FuenteOmitida omision(Fuente fuente, MotivoOmision motivo) {
+        return new FuenteOmitida(fuente, fuente.nombre(), motivo,
+                fuente.dePago() ? conexionesPago.consumoDelMes(fuente) : null,
+                fuente.dePago() ? conexionRepository.buscar(fuente).topeMensual() : null);
     }
 
     /** Pausada, o de pago sin lo que necesita o con su tope del mes consumido: no se lee ni se cuenta. */
@@ -249,6 +255,6 @@ public class RecoleccionServiceImpl implements RecoleccionService {
         return lectores.stream().map(FuenteOfertas::fuente).toList();
     }
 
-    private record Resultado(EstadoLectura estado, int ofertas) {
+    private record Resultado(EstadoLectura estado, int ofertas, java.math.BigDecimal costoUsd, String detalle) {
     }
 }
