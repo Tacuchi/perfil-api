@@ -1,81 +1,57 @@
 # perfil-api
 
-API de perfil.tacuchi.net: guarda las versiones del CV y entrega la vigente en `/cv`, y recoge, clasifica y lista ofertas de trabajo.
+> La api del perfil profesional: versiones del CV con `/cv` público y un monitor de ofertas de trabajo.
 
-## Rutas
+API de `<tu-dominio-del-panel>`: guarda las versiones del CV y entrega la vigente en `/cv`, y recoge, clasifica y lista ofertas de trabajo.
 
-| Ruta | Acceso | Qué hace |
-|---|---|---|
-| `GET /cv` | pública | El PDF vigente, para verlo en el navegador. Sin vigente: 404 con la página de error del sitio. |
-| `GET /api/versiones` | persona | Historial, de la más reciente a la más antigua. |
-| `POST /api/versiones` | persona | Sube `pdf` y, opcional, `word` (multipart). La nueva queda vigente. |
-| `GET /api/versiones/{id}/pdf` · `/word` | persona | Descarga una versión o su Word. |
-| `PUT /api/vigente` | persona | `{"version": "<id>"}` deja vigente una versión anterior. |
-| `GET /api/ofertas` | persona | Lista de ofertas. Sin filtros: nuevas de encaje alto y medio. Filtros: `encaje`, `estado`, `fuente`, `modalidad` (uno o varios, separados por coma), `tecnologia`, `desde` y `hasta` (`AAAA-MM-DD`, días de Lima). |
-| `GET /api/ofertas/{id}` | persona | Una oferta con su texto y, si lo trae, el correo de contacto. |
-| `PATCH /api/ofertas/{id}` | persona | `{"estado": "GUARDADA" \| "DESCARTADA" \| "POSTULADA"}`. La postulada guarda su fecha. |
-| `GET /api/fuentes` | persona | Estado de cada fuente: `CORRECTA`, `FALLO`, `BLOQUEO` o `SIN_LEER`, con su última lectura correcta y las lecturas que le quedan hoy (`lecturasRestantes`). |
-| `PUT /api/fuentes/{fuente}/clave` | persona | `{"clave": "..."}` carga o reemplaza la clave de una conexión de pago. Se guarda cifrada y nunca vuelve: `GET /api/fuentes` solo dice `tieneClave` y `claveCargadaEn`. Sin la llave de claves del servidor: `409` con motivo `FALTA_LLAVE`. |
-| `PUT /api/fuentes/{fuente}/tope` | persona | `{"topeMensual": 5}` fija el tope de gasto del mes, en dólares. `GET /api/fuentes` muestra además `consumoMes` y `queFalta`. |
-| `POST /api/recoleccion` | persona | Lanza ahora la lectura de todas las fuentes con lecturas disponibles hoy. Responde `202` con lo que va a leer y lo omitido por tope; lee en segundo plano. |
-| `POST /api/recoleccion/{fuente}` | persona | Lanza ahora la lectura de una fuente. |
-| `GET /api/recoleccion` | persona | Avance de la recolección en curso (programada o a demanda) o resultado de la última: cada fuente lanzada como `PENDIENTE`, `LEYENDO` o `TERMINADA`, con su resultado. |
-| `GET /api/tecnologias` | persona | Tecnologías del CV con las que se clasifica, principales y secundarias. |
+La usa una sola persona, desde el panel, detrás del proxy de acceso. Cada lectura de ofertas la lanza la persona, y las de pago nunca gastan más que su tope del mes.
 
-Un lanzamiento se rechaza con `409` y su `motivo`: `EN_CURSO` (ya corre otra), `TOPE_DIARIO` (la fuente ya recibió sus lecturas de hoy), `PAUSADA`, `DESDE_MAQUINA`, `FALTA_CONFIGURAR` (a una de pago le falta su clave, su tope o la llave del servidor), `TOPE_MENSUAL` (una de pago consumió su tope del mes) o `SIN_FUENTES` (ninguna se puede leer).
+## Instalación
 
-«Persona» = petición con el código de Cloudflare Access (`Cf-Access-Jwt-Assertion`) válido para la aplicación y el correo configurados. Los cambios además exigen `Origin` igual a la dirección del panel.
+### Requisitos
 
-## Configuración
+Requiere JDK 25 y un PostgreSQL 18.
 
-Todo llega por variables de entorno; si falta una, el servicio no arranca y la nombra.
+### Configuración
 
-| Variable | Valor |
-|---|---|
-| `PERFIL_ACCESS_EMISOR` | `https://<equipo>.cloudflareaccess.com` |
-| `PERFIL_ACCESS_AUD` | Audience tag de la aplicación de Access |
-| `PERFIL_ACCESS_CORREO` | Correo permitido |
-| `PERFIL_ALMACEN_ENDPOINT` | `https://<cuenta>.r2.cloudflarestorage.com` |
-| `PERFIL_ALMACEN_BUCKET` | Bucket de R2 |
-| `PERFIL_ALMACEN_ACCESO` · `PERFIL_ALMACEN_SECRETO` | Credencial de R2 limitada al bucket (secreta) |
-| `PERFIL_CV_ARCHIVO` | Nombre con que se guarda el PDF público, p. ej. `Nombre-Apellido-CV.pdf` |
-| `PERFIL_SITIO_URL` | Sitio público, de donde sale la página 404 |
-| `PERFIL_PANEL_ORIGEN` | `https://perfil.tacuchi.net` |
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://<host>:5432/<base>` (PostgreSQL 18) |
-| `SPRING_DATASOURCE_USERNAME` · `SPRING_DATASOURCE_PASSWORD` | Usuario de la base (secreto) |
-| `PERFIL_AVISO_ACTIVO` | `true` o `false`: el correo diario de ofertas. Se declara siempre |
-| `PERFIL_AVISO_REMITENTE` | Remitente del correo diario. Obligatorio con el aviso encendido |
-| `PERFIL_CLAVES_LLAVE` | 32 bytes en base64 (`openssl rand -base64 32`): cifra las claves de las conexiones de pago (secreta). Opcional: sin ella, o con otra longitud, la API arranca y las de pago quedan «falta configurar» |
-| `SPRING_MAIL_HOST` · `SPRING_MAIL_PORT` · `SPRING_MAIL_USERNAME` · `SPRING_MAIL_PASSWORD` | Servidor de envío (SMTP) del proveedor elegido. Obligatorio con el aviso encendido; la clave es secreta |
+Todo llega por variables de entorno; si falta una, el servicio no arranca y la nombra. La lista completa, con los valores opcionales y la recolección programada, está en [docs/configuracion.md](docs/configuracion.md).
 
-El correo diario va solo a `PERFIL_ACCESS_CORREO`. Las direcciones de las tres fuentes de ofertas y el horario de la recolección (`perfil.ofertas.*`) tienen su valor en `application.properties`; se cambian con su variable (`PERFIL_OFERTAS_CRON`, ...) solo para pruebas. La recolección programada viene apagada (`perfil.ofertas.cron=-`): cada lectura la lanza la persona. Para encenderla, un cron en `PERFIL_OFERTAS_CRON` (por ejemplo `0 0 * * * *`). Los términos de búsqueda de Computrabajo y su máximo de avisos por corrida (`perfil.computrabajo.*`) también están en `application.properties`.
+### Despliegue
 
-## Monitor de ofertas
+`.github/workflows/deploy.yml` prueba, publica la imagen con la etiqueta del commit y redespliega en el orquestador. Las rutas del proxy están en `deploy/traefik-dynamic.yml`. La imagen limita la JVM a 224 MB de heap; en el orquestador fija además el límite de memoria del contenedor en 512 MB. La base de datos es un PostgreSQL 18 aparte en el mismo servidor.
 
-- **Fuentes:** Get on Board, Remotive y Remote OK, por la API pública que cada una declara. La persona lanza cada lectura desde el panel. La recolección programada, apagada por defecto, si se enciende lee una vez al día cada fuente que ese día aún no tiene lecturas. Cada fuente recibe como máximo 3 lecturas por día de Lima, programadas y a demanda, terminen bien o no: cada lectura se cuenta en la base (`lectura_dia`) antes de pedirla al sitio. Ante un fallo o un bloqueo la fuente queda marcada y no se prueba otra vía; la programada no la reintenta.
-- **Computrabajo:** por el actor de Apify `santamaria-automations/computrabajo-scraper`, con la clave y el tope mensual que la persona carga en Conexiones. Busca los términos configurados en Perú, por recientes, hasta 25 avisos por corrida. Cada corrida pide a Apify un gasto máximo igual al saldo del tope y suma al consumo del mes de Lima lo que Apify informa; si ese costo no se asienta a tiempo, se calcula por el número de avisos con los precios de la corrida. Alcanzado el tope, no se lee y Apify no recibe ninguna consulta. No tiene tope diario. La clave viaja solo en la cabecera de autorización.
+## Uso
+
+### Rutas
+
+`GET /cv` es la única ruta pública. Las demás exigen a la persona o, en `/api/lector/**`, al lector local. La tabla de rutas, sus filtros y los motivos de rechazo están en [docs/rutas.md](docs/rutas.md).
+
+### Monitor de ofertas
+
+- **Fuentes públicas:** Get on Board, Remotive y Remote OK, por la API pública que cada una declara. La persona lanza cada lectura desde el panel. La recolección programada, apagada por defecto, si se enciende lee una vez al día cada fuente que ese día aún no tiene lecturas. Cada una de estas tres recibe como máximo 3 lecturas por día de Lima, programadas y a demanda, terminen bien o no: cada lectura se cuenta en la base (`lectura_dia`) antes de pedirla al sitio. Ante un fallo o un bloqueo la fuente queda marcada y no se prueba otra vía; la programada no la reintenta.
+- **Computrabajo:** por el actor de Apify `santamaria-automations/computrabajo-scraper`, con la clave de Apify y el tope mensual que la persona carga en Conexiones. Busca los términos configurados en Perú, por recientes, hasta 25 avisos por corrida. Cada corrida pide a Apify un gasto máximo igual al saldo del tope y suma al consumo del mes de Lima lo que Apify informa; si ese costo no se asienta a tiempo, se calcula por el número de avisos con los precios de la corrida. Alcanzado el tope, no se lee y Apify no recibe ninguna consulta. No tiene tope diario. La clave viaja solo en la cabecera de autorización.
+- **LinkedIn y Bumeran:** también por Apify, con la misma clave y un tope mensual propio, de 1 USD por defecto. Buscan los mismos términos: LinkedIn en Perú y en remoto para Latinoamérica; Bumeran en Perú.
 - **Una recolección a la vez:** el candado y el avance viven en memoria, así que la API corre como una sola instancia.
 - **Clasificación:** reglas fijas en `clasificacion/Clasificador.java`. Las tecnologías del CV están en `src/main/resources/ofertas/tecnologias.json`, copiadas a mano del hub; si el CV cambia, hay que copiarlas de nuevo.
 - **Conservación:** las nuevas y las descartadas se eliminan 60 días después de vistas por última vez; las guardadas y las postuladas se conservan.
 - **Esquema:** `src/main/resources/db/migration/`, aplicado por Flyway al arrancar.
 
-## Desarrollo
+### Desarrollo
 
-Requiere JDK 25. `./mvnw verify` corre todas las pruebas, sobre un PostgreSQL 18 real que se levanta solo y sin Docker. Las fuentes se prueban contra sus respuestas reales guardadas (`src/test/resources/fuentes/`), con los correos de terceros reemplazados por direcciones de ejemplo; el correo diario, contra un servidor SMTP de prueba.
+`./mvnw verify` corre todas las pruebas y `./mvnw spring-boot:test-run` levanta la API en local con dobles de prueba para recorrerla con el panel. Los dobles, el código local y los mandos están en [docs/desarrollo.md](docs/desarrollo.md).
 
-`./mvnw spring-boot:test-run` levanta la API en `http://localhost:8080` para recorrerla con el panel: almacén en memoria, un sitio de prueba para la página 404, un Access de prueba que publica sus claves en local, un PostgreSQL de pruebas, las tres fuentes servidas desde sus respuestas guardadas, un Apify de prueba para Computrabajo (su clave es `clave-de-prueba`) y un servidor de correo de prueba con el aviso encendido. El código firmado para la persona queda en `target/codigo-local.jwt`; el panel lo envía con `PERFIL_CODIGO_LOCAL="$(cat target/codigo-local.jwt)" npm start`. La recolección no corre por horario: se dispara con los mandos locales, que exigen el mismo código y el origen del panel:
+## Cómo funciona
 
-| Mando | Qué hace |
-|---|---|
-| `POST /api/local/recoger` | Corre la programada y espera a que termine (cada fuente sin lecturas en el día del reloj local). |
-| `POST /api/local/programada` | Dispara la programada en segundo plano y responde sin esperarla. |
-| `POST /api/local/dia-siguiente` | Adelanta el reloj un día y dispara la programada sin esperarla. |
-| `PUT /api/local/fuentes/{fuente}?modo=BIEN\|FALLA\|BLOQUEA` | Hace que una fuente responda bien, falle o bloquee. |
-| `PUT /api/local/fuentes/{fuente}/pausa?activa=true\|false` | La fuente recibe las peticiones y retiene la respuesta hasta que se la suelta (máximo 50 s), para ver el paso «leyendo». |
-| `GET /api/local/correos` | Asunto y destinatarios de los correos recibidos. |
+La api es un solo proceso Spring Boot. Guarda las ofertas y las conexiones en la base de datos y los archivos del CV en R2. Lee las ofertas de las bolsas públicas y de Apify, y escribe solo a la persona. Toda petición, salvo `/cv`, llega con el código del proxy de acceso.
 
-Nada de esto entra al jar. El contrato del almacén corre también contra R2 cuando están definidas las cuatro variables `PERFIL_ALMACEN_*`.
+![Diagrama de contexto de perfil-api](docs/architecture/context.svg)
 
-## Despliegue
+El cuadro completo está en [ARCHITECTURE.md](ARCHITECTURE.md).
 
-`.github/workflows/deploy.yml` prueba, publica la imagen con la etiqueta del commit y redespliega en Coolify. Las rutas del proxy están en `deploy/traefik-dynamic.yml`. La imagen limita la JVM a 224 MB de heap; en Coolify fija además el límite de memoria del contenedor en 512 MB. La base de datos es un PostgreSQL 18 aparte en el mismo servidor.
+## Contribuir
+
+Es un proyecto personal y privado: no se aceptan contribuciones externas. Para trabajar en el código, ver [docs/desarrollo.md](docs/desarrollo.md).
+
+## Licencia
+
+Sin licencia de uso: todos los derechos reservados. No hay archivo de licencia ni licencia declarada en `pom.xml`.

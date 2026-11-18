@@ -1,0 +1,534 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Contenedores: perfil-api",
+    "locale": "es",
+    "output": "docs/architecture/containers.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Tacuchi/perfil-api.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "53fedef2dadbd72a66e95b91166bd891c981e494"
+    }
+  },
+  "components": [
+    {
+      "id": "visitante",
+      "type": "external",
+      "label": "Visitante",
+      "icon": "person",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        140,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/controller/CvPublicoController.java",
+          "line": 25,
+          "end_line": 32
+        }
+      ]
+    },
+    {
+      "id": "panel",
+      "type": "frontend",
+      "label": "Panel",
+      "pos": [
+        40,
+        220
+      ],
+      "size": [
+        140,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/config/OrigenPanelFilter.java",
+          "line": 13,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "id": "lector",
+      "type": "external",
+      "label": "Lector local",
+      "pos": [
+        40,
+        380
+      ],
+      "size": [
+        140,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/controller/LectorController.java",
+          "line": 20,
+          "end_line": 29
+        }
+      ]
+    },
+    {
+      "id": "acceso",
+      "type": "security",
+      "label": "Proxy de acceso",
+      "sublabel": "código por petición",
+      "pos": [
+        250,
+        220
+      ],
+      "size": [
+        160,
+        220
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/config/SeguridadConfig.java",
+          "line": 31,
+          "end_line": 38
+        }
+      ]
+    },
+    {
+      "id": "enrutador",
+      "type": "security",
+      "label": "Enrutador",
+      "sublabel": "solo tráfico de Cloudflare",
+      "pos": [
+        480,
+        40
+      ],
+      "size": [
+        160,
+        400
+      ],
+      "sources": [
+        {
+          "path": "deploy/traefik-dynamic.yml",
+          "line": 10,
+          "end_line": 17
+        },
+        {
+          "path": "deploy/traefik-dynamic.yml",
+          "line": 61,
+          "end_line": 88
+        }
+      ]
+    },
+    {
+      "id": "seguridad",
+      "type": "security",
+      "label": "Seguridad",
+      "sublabel": "código y origen",
+      "pos": [
+        710,
+        40
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/config/SeguridadConfig.java",
+          "line": 48,
+          "end_line": 82
+        }
+      ]
+    },
+    {
+      "id": "rutas",
+      "type": "backend",
+      "label": "Rutas HTTP",
+      "sublabel": "controladores",
+      "pos": [
+        710,
+        170
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/controller/RecoleccionController.java",
+          "line": 17,
+          "end_line": 25
+        }
+      ]
+    },
+    {
+      "id": "candado",
+      "type": "database",
+      "label": "Candado y avance",
+      "sublabel": "en memoria",
+      "pos": [
+        710,
+        300
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/service/CandadoRecoleccion.java",
+          "line": 13,
+          "end_line": 22
+        }
+      ]
+    },
+    {
+      "id": "versiones",
+      "type": "backend",
+      "label": "Versiones del CV",
+      "pos": [
+        950,
+        40
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/service/impl/VersionesServiceImpl.java",
+          "line": 54,
+          "end_line": 80
+        }
+      ]
+    },
+    {
+      "id": "recoleccion",
+      "type": "backend",
+      "label": "Recolección",
+      "sublabel": "fuentes y clasificación",
+      "pos": [
+        950,
+        150
+      ],
+      "size": [
+        170,
+        110
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/service/impl/RecoleccionServiceImpl.java",
+          "line": 40,
+          "end_line": 47
+        }
+      ]
+    },
+    {
+      "id": "conexiones",
+      "type": "backend",
+      "label": "Conexiones",
+      "sublabel": "clave cifrada y topes",
+      "pos": [
+        710,
+        420
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/service/CifradoClaves.java",
+          "line": 18,
+          "end_line": 25
+        },
+        {
+          "path": "src/main/resources/db/migration/V3__conexiones.sql",
+          "line": 1,
+          "end_line": 12
+        }
+      ]
+    },
+    {
+      "id": "aviso",
+      "type": "backend",
+      "label": "Aviso diario",
+      "pos": [
+        950,
+        310
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/service/impl/AvisoServiceImpl.java",
+          "line": 20,
+          "end_line": 26
+        }
+      ]
+    },
+    {
+      "id": "base",
+      "type": "database",
+      "label": "Base de datos",
+      "sublabel": "esquema por Flyway",
+      "pos": [
+        950,
+        560
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/resources/db/migration/V1__ofertas.sql",
+          "line": 1,
+          "end_line": 2
+        },
+        {
+          "path": "src/main/resources/application.properties",
+          "line": 9,
+          "end_line": 10
+        }
+      ]
+    },
+    {
+      "id": "almacen",
+      "type": "cloud",
+      "label": "Almacén R2",
+      "pos": [
+        1250,
+        40
+      ],
+      "size": [
+        150,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/almacen/AlmacenR2.java",
+          "line": 12,
+          "end_line": 23
+        }
+      ]
+    },
+    {
+      "id": "publicas",
+      "type": "external",
+      "label": "Bolsas públicas",
+      "pos": [
+        1250,
+        140
+      ],
+      "size": [
+        150,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/fuentes/ClienteFuentes.java",
+          "line": 19,
+          "end_line": 26
+        }
+      ]
+    },
+    {
+      "id": "apify",
+      "type": "cloud",
+      "label": "Apify",
+      "pos": [
+        1250,
+        220
+      ],
+      "size": [
+        150,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/fuentes/CicloApify.java",
+          "line": 20,
+          "end_line": 24
+        }
+      ]
+    },
+    {
+      "id": "correo",
+      "type": "external",
+      "label": "Servidor de correo",
+      "pos": [
+        1250,
+        310
+      ],
+      "size": [
+        150,
+        60
+      ],
+      "sources": [
+        {
+          "path": "src/main/java/net/tacuchi/perfil/service/impl/AvisoServiceImpl.java",
+          "line": 78,
+          "end_line": 94
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Contenedor de la api",
+      "wraps": [
+        "seguridad",
+        "rutas",
+        "candado",
+        "versiones",
+        "recoleccion",
+        "conexiones",
+        "aviso"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Borde de Cloudflare",
+      "wraps": [
+        "acceso"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "visitante-enrutador",
+      "from": "visitante",
+      "to": "enrutador",
+      "label": "GET /cv"
+    },
+    {
+      "id": "panel-acceso",
+      "from": "panel",
+      "to": "acceso",
+      "label": "sesión",
+      "variant": "emphasis"
+    },
+    {
+      "id": "lector-acceso",
+      "from": "lector",
+      "to": "acceso",
+      "label": "token de servicio",
+      "variant": "dashed"
+    },
+    {
+      "id": "acceso-enrutador",
+      "from": "acceso",
+      "to": "enrutador",
+      "label": "con código",
+      "variant": "emphasis"
+    },
+    {
+      "id": "enrutador-seguridad",
+      "from": "enrutador",
+      "to": "seguridad",
+      "label": "/api y /cv"
+    },
+    {
+      "id": "seguridad-rutas",
+      "from": "seguridad",
+      "to": "rutas",
+      "label": "identificada"
+    },
+    {
+      "id": "rutas-candado",
+      "from": "rutas",
+      "to": "candado",
+      "label": "una a la vez"
+    },
+    {
+      "id": "rutas-versiones",
+      "from": "rutas",
+      "to": "versiones",
+      "label": "CV"
+    },
+    {
+      "id": "rutas-recoleccion",
+      "from": "rutas",
+      "to": "recoleccion",
+      "label": "lanzar"
+    },
+    {
+      "id": "versiones-almacen",
+      "from": "versiones",
+      "to": "almacen",
+      "label": "archivos e índice"
+    },
+    {
+      "id": "recoleccion-publicas",
+      "from": "recoleccion",
+      "to": "publicas",
+      "label": "JSON público"
+    },
+    {
+      "id": "aviso-correo",
+      "from": "aviso",
+      "to": "correo",
+      "label": "solo a la persona",
+      "variant": "dashed"
+    },
+    {
+      "id": "aviso-base",
+      "from": "aviso",
+      "to": "base",
+      "label": "un aviso por día"
+    },
+    {
+      "id": "recoleccion-apify",
+      "from": "recoleccion",
+      "to": "apify",
+      "label": "gasto máximo"
+    },
+    {
+      "id": "recoleccion-aviso",
+      "from": "recoleccion",
+      "to": "aviso",
+      "label": "al terminar"
+    },
+    {
+      "id": "conexiones-base",
+      "from": "conexiones",
+      "to": "base",
+      "label": "clave cifrada"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Qué guarda cada almacén",
+      "items": [
+        "Base de datos: ofertas, lecturas, conexiones, consumo y avisos",
+        "Almacén R2: hasta 10 versiones del CV y su índice JSON",
+        "Memoria: el candado y el avance de la recolección"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Reglas",
+      "items": [
+        "Toda ruta salvo GET /cv exige el código de Access",
+        "Un cambio exige el origen del panel",
+        "La clave de Apify nunca vuelve en una respuesta"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Revisión",
+      "items": [
+        "Versión 0.0.1-SNAPSHOT, commit 53fedef",
+        "Revisado el 2026-11-18"
+      ]
+    }
+  ]
+}
