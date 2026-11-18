@@ -54,4 +54,4 @@ Es un proyecto personal: no se aceptan contribuciones externas. Para trabajar en
 
 ## Licencia
 
-Sin licencia de uso: todos los derechos reservados. No hay archivo de licencia ni licencia declarada en `pom.xml`.
+[MIT](LICENSE).
