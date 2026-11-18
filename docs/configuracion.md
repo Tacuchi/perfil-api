@@ -23,3 +23,18 @@ Todo llega por variables de entorno; si falta una, el servicio no arranca y la n
 | `PERFIL_LECTOR_AUD` | Audience tag de la aplicación de Access que protege las rutas del lector. Opcional: sin ella, se usa `PERFIL_ACCESS_AUD` |
 
 El correo diario va solo a `PERFIL_ACCESS_CORREO`. Las direcciones de las tres fuentes de ofertas y el horario de la recolección (`perfil.ofertas.*`) tienen su valor en `application.properties`; se cambian con su variable (`PERFIL_OFERTAS_CRON`, ...) solo para pruebas. La recolección programada viene apagada (`perfil.ofertas.cron=-`): cada lectura la lanza la persona. Para encenderla, un cron en `PERFIL_OFERTAS_CRON` (por ejemplo `0 0 * * * *`). Los términos de búsqueda de Computrabajo y su máximo de avisos por corrida (`perfil.computrabajo.*`) también están en `application.properties`; LinkedIn y Bumeran buscan esos mismos términos. Los actores de Apify de LinkedIn y de Bumeran están en `perfil.apify.*`.
+
+## Límites fijos
+
+Estos valores están en el código y no se cambian por configuración.
+
+| Qué | Valor | Cuándo aplica |
+|---|---|---|
+| Lecturas por día de una bolsa pública | 3 por día de Lima | En cada lectura, termine bien o no |
+| Lecturas programadas por día | 1 por fuente | Con la programada encendida |
+| Avisos por corrida de Computrabajo | 25, se cambia con `PERFIL_COMPUTRABAJO_MAXAVISOS` | En cada lectura de Computrabajo |
+| Plazo de una corrida de Apify | 5 min, se cambia con `PERFIL_COMPUTRABAJO_PLAZOCORRIDA` | En cada lectura de pago |
+| Conservación de ofertas | 60 días desde la última vez vistas, solo nuevas y descartadas | Al terminar cada recolección |
+| Versiones del CV | 10 como máximo; 10 MB por archivo | En cada carga |
+| Ofertas por lista | 500 | En `GET /api/ofertas` |
+| Plazos del lector local | 2 min para reportarse, 15 min por corrida | Con una corrida local abierta |
